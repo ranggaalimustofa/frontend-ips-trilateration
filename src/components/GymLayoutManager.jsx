@@ -514,8 +514,8 @@ const GymLayoutManager = () => {
     })();
 
     gooeyToast.promise(savePromise, {
-      loading: 'Menyimpan layout denah gym...',
-      success: 'Layout denah gym berhasil disimpan ke database!',
+      loading: 'Menyimpan layout denah area...',
+      success: 'Layout denah area berhasil disimpan ke database!',
       error: (err) => `Gagal Menyimpan: ${err.message}`
     });
   };
@@ -538,14 +538,14 @@ const GymLayoutManager = () => {
           boxShadow: `0 0 40px ${col.border}44`,
         }}>
           <div style={{ fontSize: 16, fontWeight: 700, color: col.text, marginBottom: 16 }}>
-            Nama Ruangan
+            Nama Ruangan / Area
           </div>
           <input
             autoFocus
             value={newName}
             onChange={e => setNewName(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') confirmAddRoom(); if (e.key === 'Escape') cancelAddRoom(); }}
-            placeholder="cth. Ruang Fitness, Area Beban ..."
+            placeholder="cth. Ruang Server, Area Kerja, Lobby ..."
             style={{
               width: '100%', padding: '9px 12px',
               background: '#ffff', border: `1px solid ${col.border}66`,
@@ -554,7 +554,7 @@ const GymLayoutManager = () => {
             }}
           />
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 11, color: '#4a7a9b', marginBottom: 6 }}>Warna Ruangan</div>
+            <div style={{ fontSize: 11, color: '#4a7a9b', marginBottom: 6 }}>Warna Area</div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {ROOM_COLORS.map((c, i) => (
                 <div
@@ -647,8 +647,8 @@ const GymLayoutManager = () => {
     <div>
       {/* ─ Header hint ─ */}
       <div style={{ marginBottom: 12, padding: '10px 14px', background: 'rgba(99, 102, 241, 0.05)', border: '1px solid rgba(99, 102, 241, 0.2)', borderRadius: 8, fontSize: 12, color: '#555' }}>
-        <strong style={{ color: '#6366f1' }}>Editor Denah</strong>
-        {' '}— Upload gambar denah, pilih tool <em>Gambar</em>, lalu klik &amp; seret untuk menambah ruangan.
+        <strong style={{ color: '#6366f1' }}>Editor Denah Area</strong>
+        {' '}— Upload gambar denah, pilih tool <em>Gambar</em>, lalu klik &amp; seret untuk menambah area/ruangan.
       </div>
 
       <div style={S.layout}>

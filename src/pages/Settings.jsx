@@ -232,7 +232,7 @@ const Settings = () => {
             ) : (
               <form onSubmit={handleSaveSettings}>
                 <div className="mb-3">
-                  <label htmlFor="gym-name" className="form-label">Nama Pusat Kebugaran</label>
+                  <label htmlFor="gym-name" className="form-label">Nama Fasilitas / Area IPS</label>
                   <input 
                     type="text" 
                     className="form-control" 
@@ -243,7 +243,7 @@ const Settings = () => {
                   />
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="gym-address" className="form-label">Alamat</label>
+                  <label htmlFor="gym-address" className="form-label">Alamat / Lokasi Gedung</label>
                   <textarea 
                     className="form-control" 
                     id="gym-address" 
@@ -254,7 +254,7 @@ const Settings = () => {
                   ></textarea>
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="gym-phone" className="form-label">Telepon</label>
+                  <label htmlFor="gym-phone" className="form-label">Telepon Kontak</label>
                   <input 
                     type="text" 
                     className="form-control" 
@@ -265,7 +265,7 @@ const Settings = () => {
                   />
                 </div>
                 <div className="mb-3">
-                  <label htmlFor="gym-email" className="form-label">Email</label>
+                  <label htmlFor="gym-email" className="form-label">Email Kontak</label>
                   <input 
                     type="email" 
                     className="form-control" 
@@ -277,7 +277,7 @@ const Settings = () => {
                 </div>
                 
                 <div className="mb-4">
-                  <label className="form-label fw-bold">Jam Operasional Gym</label>
+                  <label className="form-label fw-bold">Jam Operasional Fasilitas</label>
                   <div className="row g-3">
                     <div className="col-md-6">
                       <div className="p-3 bg-light rounded shadow-sm border border-light-subtle">

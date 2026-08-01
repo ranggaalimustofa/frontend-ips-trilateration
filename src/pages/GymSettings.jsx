@@ -6,8 +6,8 @@ const GymSettings = () => {
     <div id="gym-settings-content" className="p-2">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 className="mb-1">Pengaturan Tempat Gym</h2>
-          <p className="text-muted mb-0">Kelola denah lantai dan area ruangan gym secara interaktif</p>
+          <h2 className="mb-1">Tata Letak Denah Area & Gedung</h2>
+          <p className="text-muted mb-0">Kelola denah lantai dan area zona pelacakan secara interaktif</p>
         </div>
       </div>
       <GymLayoutManager />

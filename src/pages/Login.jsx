@@ -26,7 +26,7 @@ const Login = () => {
       setLoading(true);
       // Log in user via Supabase
       await login(email, password);
-      gooeyToast.success('Selamat datang kembali di FitTrack Pro!');
+      gooeyToast.success('Selamat datang di Trilateration IPS System!');
       navigate('/dashboard');
     } catch (err) {
       gooeyToast.error(err.message || 'Terjadi kesalahan. Silakan periksa kembali data Anda.');
@@ -39,9 +39,9 @@ const Login = () => {
     <div className="login-container" style={{ background: 'rgb(229 229 229 / 85%)' }}>
       <div className="login-card">
         <div className="login-header">
-          <i className="bi bi-activity" style={{ fontSize: '3rem' }}></i>
-          <h2>FitTrack Pro</h2>
-          <p>Sistem Monitoring Keanggotaan</p>
+          <i className="bi bi-broadcast-pin" style={{ fontSize: '3rem', color: '#6366f1' }}></i>
+          <h2>Trilateration IPS</h2>
+          <p>Sistem Monitoring & Pelacakan Lokasi</p>
         </div>
         <div className="login-body">
           <form onSubmit={handleSubmit}>

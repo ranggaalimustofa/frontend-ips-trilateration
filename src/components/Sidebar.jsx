@@ -23,40 +23,40 @@ const Sidebar = ({ isActive, isCollapsed, toggleSidebar, toggleSidebarDesktop })
     <div className={`sidebar ${isActive ? 'active' : ''} ${isCollapsed ? 'collapsed' : ''}`} id="sidebar">
       <div className="sidebar-header d-flex justify-content-between align-items-center" style={{ paddingRight: '15px' }}>
         <div className="logo-container d-flex align-items-center">
-          <i className="bi bi-activity me-2" style={{ fontSize: '1.5rem' }}></i>
-          <h3>{gymProfile?.name || 'FitTrack Pro'}</h3>
+          <i className="bi bi-broadcast-pin me-2" style={{ fontSize: '1.5rem', color: '#6366f1' }}></i>
+          <h3>{gymProfile?.name || 'Trilateration IPS'}</h3>
         </div>
         <i className={`bi ${isCollapsed ? 'bi-chevron-right' : 'bi-chevron-left'} d-none d-lg-block toggle-icon`} style={{ fontSize: '1.5rem', cursor: 'pointer' }} onClick={toggleSidebarDesktop}></i>
       </div>
       <ul className="sidebar-menu">
         <li>
           <NavLink to="/dashboard" end className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-            <i className="bi bi-speedometer2"></i> <span>Dashboard</span>
+            <i className="bi bi-speedometer2"></i> <span>Dashboard IPS</span>
           </NavLink>
         </li>
         <li>
           <NavLink to="/dashboard/position" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-            <i className="bi bi-geo-alt"></i> <span>Monitoring Posisi</span>
+            <i className="bi bi-geo-alt"></i> <span>Live Position Tracker</span>
           </NavLink>
         </li>
         <li>
           <NavLink to="/dashboard/members" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-            <i className="bi bi-people"></i> <span>Data Member</span>
+            <i className="bi bi-people"></i> <span>Data Subjek / User</span>
           </NavLink>
         </li>
         <li>
           <NavLink to="/dashboard/presence" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-            <i className="bi bi-calendar-check"></i> <span>Data Kehadiran</span>
+            <i className="bi bi-calendar-check"></i> <span>Log Presensi Area</span>
           </NavLink>
         </li>
         <li>
           <NavLink to="/dashboard/tags" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-            <i className="bi bi-tag"></i> <span>Manajemen Tag</span>
+            <i className="bi bi-tag"></i> <span>Manajemen Smart Tag</span>
           </NavLink>
         </li>
         <li>
           <NavLink to="/dashboard/reports" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-            <i className="bi bi-file-earmark-bar-graph"></i> <span>Laporan</span>
+            <i className="bi bi-file-earmark-bar-graph"></i> <span>Laporan & Analisis</span>
           </NavLink>
         </li>
         <li>
@@ -65,24 +65,24 @@ const Sidebar = ({ isActive, isCollapsed, toggleSidebar, toggleSidebarDesktop })
             className="menu-item" 
             onClick={(e) => { e.preventDefault(); setIsSettingsOpen(!isSettingsOpen); }}
           >
-            <i className="bi bi-gear"></i> <span>Pengaturan</span>
+            <i className="bi bi-gear"></i> <span>Pengaturan Sistem</span>
             <i className={`bi bi-chevron-${isSettingsOpen ? 'up' : 'down'} ms-auto`} style={{fontSize: '0.8rem', marginRight: 0}}></i>
           </a>
           {isSettingsOpen && (
             <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
               <li>
                 <NavLink to="/dashboard/settings" end className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} style={{ paddingLeft: '45px', fontSize: '0.95em' }} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-                  <i className="bi bi-circle" style={{ fontSize: '0.5rem', marginRight: '10px' }}></i> <span>Profil</span>
+                  <i className="bi bi-circle" style={{ fontSize: '0.5rem', marginRight: '10px' }}></i> <span>Profil Fasilitas</span>
                 </NavLink>
               </li>
               <li>
                 <NavLink to="/dashboard/gym-layout" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} style={{ paddingLeft: '45px', fontSize: '0.95em' }} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-                  <i className="bi bi-circle" style={{ fontSize: '0.5rem', marginRight: '10px' }}></i> <span>Denah Lokasi</span>
+                  <i className="bi bi-circle" style={{ fontSize: '0.5rem', marginRight: '10px' }}></i> <span>Tata Letak Denah Area</span>
                 </NavLink>
               </li>
               <li>
                 <NavLink to="/dashboard/device" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} style={{ paddingLeft: '45px', fontSize: '0.95em' }} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-                  <i className="bi bi-circle" style={{ fontSize: '0.5rem', marginRight: '10px' }}></i> <span>Perangkat MCU</span>
+                  <i className="bi bi-circle" style={{ fontSize: '0.5rem', marginRight: '10px' }}></i> <span>Anchor & Gateway</span>
                 </NavLink>
               </li>
             </ul>

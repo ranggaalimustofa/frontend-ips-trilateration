@@ -212,7 +212,7 @@ const Members = () => {
 
   return (
     <div id="members-content">
-      <h2 className="mb-4">Data Member</h2>
+      <h2 className="mb-4">Data Subjek / Entitas Terlacak</h2>
 
       {/* Summary Cards */}
       <div className="row mb-4">
@@ -221,9 +221,9 @@ const Members = () => {
             <div className="position-absolute" style={{ right: '-20px', bottom: '-20px', fontSize: '8rem', opacity: 0.15, pointerEvents: 'none' }}>
               <i className="bi bi-people-fill"></i>
             </div>
-            <h6 className="text-white-50 text-uppercase tracking-wider small fw-bold">Total Member</h6>
+            <h6 className="text-white-50 text-uppercase tracking-wider small fw-bold">Total Subjek</h6>
             <h2 className="display-5 fw-bold mb-1">{totalMembersCount}</h2>
-            <p className="mb-0 text-white-50 small">Anggota gym terdaftar</p>
+            <p className="mb-0 text-white-50 small">Subjek / entitas terdaftar</p>
           </div>
         </div>
         
@@ -232,9 +232,9 @@ const Members = () => {
             <div className="position-absolute" style={{ right: '-20px', bottom: '-20px', fontSize: '8rem', opacity: 0.15, pointerEvents: 'none' }}>
               <i className="bi bi-person-check-fill"></i>
             </div>
-            <h6 className="text-white-50 text-uppercase tracking-wider small fw-bold">Member Aktif</h6>
+            <h6 className="text-white-50 text-uppercase tracking-wider small fw-bold">Subjek Aktif</h6>
             <h2 className="display-5 fw-bold mb-1">{activeMembersCount}</h2>
-            <p className="mb-0 text-white-50 small">Keanggotaan berstatus aktif</p>
+            <p className="mb-0 text-white-50 small">Status pelacakan aktif</p>
           </div>
         </div>
 
@@ -243,9 +243,9 @@ const Members = () => {
             <div className="position-absolute" style={{ right: '-20px', bottom: '-20px', fontSize: '8rem', opacity: 0.15, pointerEvents: 'none' }}>
               <i className="bi bi-person-x-fill"></i>
             </div>
-            <h6 className="text-white-50 text-uppercase tracking-wider small fw-bold">Member Tidak Aktif</h6>
+            <h6 className="text-white-50 text-uppercase tracking-wider small fw-bold">Subjek Tidak Aktif</h6>
             <h2 className="display-5 fw-bold mb-1">{inactiveMembersCount}</h2>
-            <p className="mb-0 text-white-50 small">Keanggotaan dibekukan / tidak aktif</p>
+            <p className="mb-0 text-white-50 small">Status pelacakan nonaktif</p>
           </div>
         </div>
       </div>
@@ -289,8 +289,8 @@ const Members = () => {
       <div className="data-table-container">
         <div className="table-header">
           <div>
-            <h5>Daftar Member</h5>
-            <p className="text-muted mb-0">Total {filteredMembers.length} dari {members.length} member terdaftar</p>
+            <h5>Daftar Subjek & Entitas Tag</h5>
+            <p className="text-muted mb-0">Total {filteredMembers.length} dari {members.length} subjek terdaftar</p>
           </div>
           <div>
             <button
@@ -298,7 +298,7 @@ const Members = () => {
                 onClick={openAddModal}
                 style={{ borderRadius: '8px', fontSize: '12px', fontWeight: '600' }}
               >
-                <i className="bi bi-person-plus-fill fs-6"></i> Tambah Member
+                <i className="bi bi-person-plus-fill fs-6"></i> Tambah Subjek
               </button>
           </div>
         </div>
@@ -308,19 +308,19 @@ const Members = () => {
             <div className="spinner-border text-primary" role="status">
               <span className="visually-hidden">Loading...</span>
             </div>
-            <p className="mt-2 text-muted">Memuat data member dari Supabase...</p>
+            <p className="mt-2 text-muted">Memuat data subjek dari Supabase...</p>
           </div>
         ) : (
           <div className="table-responsive">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>ID Member</th>
+                  <th>ID Subjek</th>
                   <th>Nama</th>
                   <th>Email</th>
                   <th>Status</th>
                   <th>ID Tag</th>
-                  <th>Tanggal Bergabung</th>
+                  <th>Tanggal Terdaftar</th>
                   <th>Aksi</th>
                 </tr>
               </thead>

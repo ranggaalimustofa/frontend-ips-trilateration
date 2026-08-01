@@ -244,7 +244,7 @@ const Presence = () => {
 
   return (
     <div id="presence-content">
-      <h2 className="mb-4">Data Kehadiran</h2>
+      <h2 className="mb-4">Log Presensi & Deteksi Area</h2>
 
       {/* Filter and Search Panel */}
       <div className="card border-0 shadow-sm mb-4 p-3" style={{ borderRadius: '12px' }}>
@@ -257,7 +257,7 @@ const Presence = () => {
               <input
                 type="text"
                 className="form-control border-start-0 ps-0"
-                placeholder="Cari nama member..."
+                placeholder="Cari nama subjek..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -277,9 +277,9 @@ const Presence = () => {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <option value="Semua Member">Semua Status Member</option>
-              <option value="Member Aktif">Member Aktif</option>
-              <option value="Member Tidak Aktif">Member Tidak Aktif</option>
+              <option value="Semua Member">Semua Status Subjek</option>
+              <option value="Member Aktif">Subjek Aktif</option>
+              <option value="Member Tidak Aktif">Subjek Tidak Aktif</option>
             </select>
           </div>
           <div className="col-md-1 col-lg-1 d-flex justify-content-end">
@@ -293,8 +293,8 @@ const Presence = () => {
       <div className="data-table-container">
         <div className="table-header">
           <div>
-            <h5>Data Kehadiran Member</h5>
-            <p className="text-muted mb-0">Menampilkan {filteredPresence.length} catatan kehadiran</p>
+            <h5>Data Kehadiran & Deteksi Subjek</h5>
+            <p className="text-muted mb-0">Menampilkan {filteredPresence.length} catatan deteksi</p>
           </div>
           <div>
             <button 
@@ -312,20 +312,20 @@ const Presence = () => {
             <div className="spinner-border text-primary" role="status">
               <span className="visually-hidden">Loading...</span>
             </div>
-            <p className="mt-2 text-muted">Memuat catatan kehadiran dari Supabase...</p>
+            <p className="mt-2 text-muted">Memuat catatan deteksi dari Supabase...</p>
           </div>
         ) : (
           <div className="table-responsive">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>ID Member</th>
-                  <th>Nama</th>
+                  <th>ID Subjek</th>
+                  <th>Nama Subjek</th>
                   <th>Tanggal</th>
                   <th>Waktu Masuk</th>
                   <th>Waktu Keluar</th>
                   <th>Durasi</th>
-                  <th>Area Terpopuler</th>
+                  <th>Area Utama</th>
                   <th>Aksi</th>
                 </tr>
               </thead>

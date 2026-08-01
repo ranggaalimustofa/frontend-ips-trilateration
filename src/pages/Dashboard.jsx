@@ -339,7 +339,7 @@ const Dashboard = () => {
 
   return (
     <div id="dashboard-content">
-      <h2 className="mb-4">Dashboard</h2>
+      <h2 className="mb-4">Dashboard System Monitoring IPS</h2>
 
       {/* Stats Cards */}
       <div className="row">
@@ -349,7 +349,7 @@ const Dashboard = () => {
               <i className="bi bi-people-fill"></i>
             </div>
             <div className="stats-value">{loading ? '...' : stats.totalMembers}</div>
-            <div className="stats-label">Total Member</div>
+            <div className="stats-label">Total Subjek Terlacak</div>
           </div>
         </div>
         <div className="col-lg-3 col-md-6 mb-4">
@@ -358,7 +358,7 @@ const Dashboard = () => {
               <i className="bi bi-person-check-fill"></i>
             </div>
             <div className="stats-value">{loading ? '...' : stats.activeToday}</div>
-            <div className="stats-label">Member Aktif Hari Ini</div>
+            <div className="stats-label">Subjek Terdeteksi Hari Ini</div>
           </div>
         </div>
         <div className="col-lg-3 col-md-6 mb-4">
@@ -367,7 +367,7 @@ const Dashboard = () => {
               <i className="bi bi-clock-fill"></i>
             </div>
             <div className="stats-value">{loading ? '...' : stats.avgDuration}</div>
-            <div className="stats-label">Rata-rata Durasi (Jam)</div>
+            <div className="stats-label">Rata-rata Durasi Area (Jam)</div>
           </div>
         </div>
         <div className="col-lg-3 col-md-6 mb-4">
@@ -376,7 +376,7 @@ const Dashboard = () => {
               <i className="bi bi-exclamation-triangle-fill"></i>
             </div>
             <div className="stats-value">{loading ? '...' : stats.inactiveMembers}</div>
-            <div className="stats-label">Member Tidak Aktif</div>
+            <div className="stats-label">Subjek Inaktif</div>
           </div>
         </div>
       </div>

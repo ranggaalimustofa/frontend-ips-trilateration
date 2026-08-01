@@ -413,8 +413,8 @@ const PositionMonitoring = () => {
     <div id="position-content">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 className="mb-1">Monitoring Posisi Member</h2>
-          <p className="text-muted mb-0">Lihat lokasi anggota gym secara real-time berdasarkan data sensor UWB Trilaterasi</p>
+          <h2 className="mb-1">Live Indoor Positioning Tracker</h2>
+          <p className="text-muted mb-0">Visualisasi posisi subjek dan Smart Tag secara real-time berbasis sinyal LoRa & Filter Kalman</p>
         </div>
         <button className="btn btn-outline-primary px-3 rounded-pill" onClick={fetchData}>
           <i className="bi bi-arrow-clockwise me-1"></i> Segarkan Peta
@@ -425,7 +425,7 @@ const PositionMonitoring = () => {
         <div className="col-lg-8 mb-4">
           <div className="indoor-map-container shadow-sm border-0" style={{ height: '620px', display: 'flex', flexDirection: 'column' }}>
             <h5 className="mb-3 d-flex justify-content-between align-items-center">
-              <span>Denah Pusat Kebugaran</span>
+              <span>Denah Area / Gedung</span>
               <span className="badge bg-success-subtle text-success border border-success-subtle px-3 py-1" style={{ fontSize: '10px' }}>
                 <span className="spinner-grow spinner-grow-sm me-2 text-success" role="status" style={{ width: '8px', height: '8px' }}></span>
                 Live Tracking Connected

@@ -12,7 +12,7 @@ const TopNavbar = () => {
     <div className="top-navbar">
       <div className="search-bar">
         <i className="bi bi-search"></i>
-        <input type="text" placeholder="Cari member, laporan, dll..." />
+        <input type="text" placeholder="Cari subjek, tag, laporan, dll..." />
       </div>
       <div className="user-profile">
         <div className="user-avatar">{initial}</div>
