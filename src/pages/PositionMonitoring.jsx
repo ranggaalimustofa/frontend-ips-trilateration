@@ -364,7 +364,7 @@ const PositionMonitoring = () => {
 
     const membersListHtml = membersInArea.length > 0 
       ? `<ul style="text-align: left; margin-top: 10px; font-size: 14px;">${membersInArea.map((m) => `<li><b>${m.name}</b> (${m.memberId}) - Masuk: ${m.in_time.substring(0, 5)}</li>`).join('')}</ul>`
-      : '<p style="margin-top: 10px; color: #777;">Tidak ada member di area ini saat ini.</p>';
+      : '<p style="margin-top: 10px; color: #777;">Tidak ada tag/subjek di area ini saat ini.</p>';
 
     const roomWMeters = Number((room.w / scaleFactor).toFixed(1));
     const roomHMeters = Number((room.h / scaleFactor).toFixed(1));
@@ -704,7 +704,7 @@ const PositionMonitoring = () => {
             <div className="map-legend mt-3 position-relative border-0 shadow-none py-2 px-0 bg-transparent" style={{ bottom: 'auto', left: 'auto', transform: 'none', justifyContent: 'center' }}>
               <div className="legend-item">
                 <div className="legend-color" style={{ backgroundColor: 'var(--primary-color)' }}></div>
-                <span>Member Aktif</span>
+                <span>Tag Aktif</span>
               </div>
               <div className="legend-item">
                 <div className="legend-color" style={{ backgroundColor: 'var(--accent-color)' }}></div>
@@ -725,7 +725,7 @@ const PositionMonitoring = () => {
                 }}>
                   <i className="bi bi-broadcast" style={{ fontSize: '8px' }}></i>
                 </div>
-                <span>Anchor UWB</span>
+                <span>Anchor Node</span>
               </div>
               <div className="legend-item animate-pulse">
                 <span className="spinner-grow spinner-grow-sm text-success me-1" role="status" style={{ width: '10px', height: '10px' }}></span>
@@ -737,12 +737,12 @@ const PositionMonitoring = () => {
 
         <div className="col-lg-4">
 
-          {/* Member di Lokasi — dikembalikan ke atas */}
+          {/* Tag di Lokasi */}
 
           <div className="member-filter mb-4 shadow-sm border-0">
             <h5 className="mb-3">Filter Panel</h5>
             <div className="mb-3">
-              <label className="form-label text-muted small">Status Member</label>
+              <label className="form-label text-muted small">Status Subjek / Tag</label>
               <select
                 className="form-select"
                 value={statusFilter}
@@ -771,7 +771,7 @@ const PositionMonitoring = () => {
 
           <div className="member-list shadow-sm border-0" style={{ height: '400px' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="mb-0">Member di Lokasi</h5>
+              <h5 className="mb-0">Tag di Lokasi</h5>
               <span className="badge bg-primary rounded-pill px-2">{filteredMembers.length} Aktif</span>
             </div>
             {loading ? (
@@ -781,7 +781,7 @@ const PositionMonitoring = () => {
               </div>
             ) : filteredMembers.length === 0 ? (
               <div className="text-center py-5 text-muted small">
-                Tidak ada member aktif yang terdeteksi di lokasi.
+                Tidak ada tag aktif yang terdeteksi di lokasi.
               </div>
             ) : (
               <div id="member-list-container">
