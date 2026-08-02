@@ -56,7 +56,7 @@ const Sidebar = ({ isActive, isCollapsed, toggleSidebar, toggleSidebarDesktop })
         </li>
         <li>
           <NavLink to="/dashboard/settings" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-            <i className="bi bi-gear"></i> <span>Pengaturan Sistem</span>
+            <i className="bi bi-person-gear"></i> <span>Profil & Akun Pengguna</span>
           </NavLink>
         </li>
         {user?.user_metadata?.role === 'superadmin' && (

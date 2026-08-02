@@ -5,383 +5,282 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseClient';
 
 const Settings = () => {
-  const { user, fetchGymProfile } = useAuth();
-  const emailSession = user?.email || 'admin@fittrack.com';
+  const { user } = useAuth();
+  const emailSession = user?.email || 'admin@ips.local';
   const nameSession = user?.user_metadata?.name || emailSession.split('@')[0];
   const nameCapitalized = nameSession.charAt(0).toUpperCase() + nameSession.slice(1);
   const initial = nameSession.charAt(0).toUpperCase();
-  const role = user?.user_metadata?.role === 'superadmin' ? 'Super Admin' : 'Admin Gym';
+  const role = user?.user_metadata?.role === 'superadmin' ? 'Super Admin' : 'Admin Sistem';
 
-  const [loading, setLoading] = useState(true);
-  const [gymProfile, setGymProfile] = useState({
-    name: 'FitTrack Pro Gym',
-    address: 'Jl. Fitness No. 123, Jakarta Selatan',
-    telp: '021-12345678',
-    email: 'info@fittrackpro.com',
-  });
-
-  const [weekdayOpen, setWeekdayOpen] = useState('06:00');
-  const [weekdayClose, setWeekdayClose] = useState('22:00');
-  const [weekdayClosed, setWeekdayClosed] = useState(false);
-  
-  const [weekendOpen, setWeekendOpen] = useState('07:00');
-  const [weekendClose, setWeekendClose] = useState('20:00');
-  const [weekendClosed, setWeekendClosed] = useState(false);
+  const [displayName, setDisplayName] = useState(nameSession);
+  const [displayEmail, setDisplayEmail] = useState(emailSession);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [updatingProfile, setUpdatingProfile] = useState(false);
 
   useEffect(() => {
-    const fetchGymData = async () => {
-      try {
-        setLoading(true);
-        // 1. Fetch gym profile (gymId = 1)
-        const { data: profile, error: profileError } = await supabase
-          .from('gym_profiles')
-          .select('*')
-          .eq('gymId', 1)
-          .single();
-        
-        if (profileError) {
-          console.warn('Gym profile not found or seed missing:', profileError.message);
-          setGymProfile({
-            name: profile.name || '',
-            address: profile.address || '',
-            telp: profile.telp || '',
-            email: profile.email || '',
-          });
-        }
+    if (user) {
+      setDisplayName(user.user_metadata?.name || user.email?.split('@')[0] || '');
+      setDisplayEmail(user.email || '');
+    }
+  }, [user]);
 
-        // 2. Fetch operational times
-        const { data: opTimes, error: opError } = await supabase
-          .from('operational_times')
-          .select('*')
-          .eq('gymId', 1);
-
-        if (opError) {
-          console.warn('Operational times fetch failed:', opError.message);
-        } else if (opTimes && opTimes.length > 0) {
-          // Find weekday (Senin)
-          const monday = opTimes.find(t => t.day === 'Senin');
-          if (monday && monday.open_time && monday.close_time) {
-            const openVal = monday.open_time.substring(0, 5);
-            const closeVal = monday.close_time.substring(0, 5);
-            if (openVal === '00:00' && closeVal === '00:00') {
-              setWeekdayClosed(true);
-            } else {
-              setWeekdayOpen(openVal);
-              setWeekdayClose(closeVal);
-              setWeekdayClosed(false);
-            }
-          }
-          // Find weekend (Sabtu)
-          const saturday = opTimes.find(t => t.day === 'Sabtu');
-          if (saturday && saturday.open_time && saturday.close_time) {
-            const openVal = saturday.open_time.substring(0, 5);
-            const closeVal = saturday.close_time.substring(0, 5);
-            if (openVal === '00:00' && closeVal === '00:00') {
-              setWeekendClosed(true);
-            } else {
-              setWeekendOpen(openVal);
-              setWeekendClose(closeVal);
-              setWeekendClosed(false);
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Error fetching gym settings:', err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGymData();
-  }, []);
-
-  const handleSaveSettings = (e) => {
+  // Handle updating user profile name
+  const handleUpdateProfile = async (e) => {
     e.preventDefault();
+    if (!displayName.trim()) {
+      gooeyToast.warning('Nama lengkap tidak boleh kosong');
+      return;
+    }
 
-    const savePromise = (async () => {
-      // 1. Update gym profile
-      const { error: profileError } = await supabase
-        .from('gym_profiles')
-        .update({
-          name: gymProfile.name,
-          address: gymProfile.address,
-          telp: gymProfile.telp,
-          email: gymProfile.email
-        })
-        .eq('gymId', 1);
+    try {
+      setUpdatingProfile(true);
+      const { error } = await supabase.auth.updateUser({
+        data: { name: displayName.trim() }
+      });
 
-      if (profileError) throw profileError;
+      if (error) throw error;
+      gooeyToast.success('Profil nama pengguna berhasil diperbarui!');
+    } catch (err) {
+      console.error('Error updating profile:', err);
+      gooeyToast.error('Gagal memperbarui profil: ' + err.message);
+    } finally {
+      setUpdatingProfile(false);
+    }
+  };
 
-      // 2. Update operational times
-      const days = [
-        { name: 'Senin', open: weekdayClosed ? '00:00' : weekdayOpen, close: weekdayClosed ? '00:00' : weekdayClose },
-        { name: 'Selasa', open: weekdayClosed ? '00:00' : weekdayOpen, close: weekdayClosed ? '00:00' : weekdayClose },
-        { name: 'Rabu', open: weekdayClosed ? '00:00' : weekdayOpen, close: weekdayClosed ? '00:00' : weekdayClose },
-        { name: 'Kamis', open: weekdayClosed ? '00:00' : weekdayOpen, close: weekdayClosed ? '00:00' : weekdayClose },
-        { name: 'Jumat', open: weekdayClosed ? '00:00' : weekdayOpen, close: weekdayClosed ? '00:00' : weekdayClose },
-        { name: 'Sabtu', open: weekendClosed ? '00:00' : weekendOpen, close: weekendClosed ? '00:00' : weekendClose },
-        { name: 'Minggu', open: weekendClosed ? '00:00' : weekendOpen, close: weekendClosed ? '00:00' : weekendClose },
-      ];
+  // Handle password change
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (!newPassword) {
+      gooeyToast.warning('Masukkan kata sandi baru');
+      return;
+    }
+    if (newPassword.length < 6) {
+      gooeyToast.warning('Kata sandi minimal 6 karakter');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      gooeyToast.warning('Konfirmasi kata sandi tidak cocok');
+      return;
+    }
 
-      for (const d of days) {
-        const { error: opError } = await supabase
-          .from('operational_times')
-          .update({
-            open_time: `${d.open}:00`,
-            close_time: `${d.close}:00`
-          })
-          .eq('gymId', 1)
-          .eq('day', d.name);
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
 
-        if (opError) throw opError;
-      }
+      setNewPassword('');
+      setConfirmPassword('');
+      gooeyToast.success('Kata sandi akun Anda berhasil diperbarui!');
+    } catch (err) {
+      console.error('Error changing password:', err);
+      gooeyToast.error('Gagal mengubah password: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      // Refresh global gym profile (updates document title)
-      if (fetchGymProfile) {
-        await fetchGymProfile();
-      }
-    })();
-
-    gooeyToast.promise(savePromise, {
-      loading: 'Menyimpan pengaturan profil gym...',
-      success: 'Pengaturan profil gym berhasil disimpan!',
-      error: (err) => `Gagal Menyimpan: ${err.message}`
+  // Send password reset email
+  const handleSendResetEmail = async () => {
+    const result = await Swal.fire({
+      title: 'Kirim Email Reset Password?',
+      text: `Kirimkan tautan reset kata sandi ke alamat email ${emailSession}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, Kirim Email',
+      cancelButtonText: 'Batal',
+      confirmButtonColor: '#6366f1',
+      cancelButtonColor: '#64748b'
     });
+
+    if (result.isConfirmed) {
+      try {
+        Swal.fire({
+          title: 'Mengirim...',
+          text: 'Mengirimkan email pemulihan kata sandi...',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+
+        const { error } = await supabase.auth.resetPasswordForEmail(emailSession, {
+          redirectTo: window.location.origin + '/dashboard/settings'
+        });
+
+        if (error) throw error;
+
+        Swal.close();
+        gooeyToast.success(`Email instruksi pemulihan kata sandi telah dikirim ke ${emailSession}.`);
+      } catch (err) {
+        console.error('Error sending reset email:', err);
+        Swal.close();
+        gooeyToast.error('Gagal Mengirim: ' + err.message);
+      }
+    }
   };
 
   return (
-    <div id="settings-content">
-      <h2 className="mb-4">Pengaturan Profil & Sistem</h2>
+    <div id="settings-content" className="animate-fade-in">
+      <h2 className="mb-4">Pengaturan Akun & Profil Pengguna</h2>
 
       <div className="row">
+        {/* Left Column: User Card & Session Summary */}
         <div className="col-lg-4 mb-4">
-          <div className="data-table-container">
-            <h5 className="mb-3">Profil Admin</h5>
-            <div className="d-flex align-items-center mb-4">
-              <div className="user-avatar me-3" style={{ width: '80px', height: '80px', fontSize: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="card border-0 shadow-sm p-4 text-center" style={{ borderRadius: '16px', background: '#ffffff' }}>
+            <div className="d-flex justify-content-center mb-3">
+              <div 
+                className="user-avatar bg-primary text-white shadow-sm" 
+                style={{ 
+                  width: '90px', 
+                  height: '90px', 
+                  fontSize: '2.5rem', 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)'
+                }}
+              >
                 {initial}
               </div>
-              <div>
-                <h5 className="mb-1">{nameCapitalized}</h5>
-                <p className="text-muted mb-1" style={{ fontSize: '0.9rem' }}>{emailSession}</p>
-                <span className="badge bg-primary">{role}</span>
+            </div>
+            
+            <h4 className="fw-bold mb-1 text-dark">{nameCapitalized}</h4>
+            <p className="text-muted mb-2 small">{emailSession}</p>
+            
+            <div className="mb-4">
+              <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 rounded-pill fw-semibold">
+                <i className="bi bi-shield-check me-1"></i>{role}
+              </span>
+            </div>
+
+            <hr className="my-3 text-muted opacity-25" />
+
+            <div className="text-start small text-muted mb-4">
+              <div className="d-flex justify-content-between mb-2">
+                <span>Status Akun:</span>
+                <span className="fw-semibold text-success">
+                  <i className="bi bi-check-circle-fill me-1"></i>Terkonfirmasi
+                </span>
+              </div>
+              <div className="d-flex justify-content-between mb-2">
+                <span>Terakhir Masuk:</span>
+                <span className="fw-semibold text-dark">
+                  {user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : 'Sekarang'}
+                </span>
+              </div>
+              <div className="d-flex justify-content-between">
+                <span>User ID:</span>
+                <span className="font-monospace text-truncate ms-2" style={{ maxWidth: '140px' }} title={user?.id}>
+                  {user?.id ? `${user.id.substring(0, 10)}...` : 'Demo ID'}
+                </span>
               </div>
             </div>
-            <button className="btn btn-outline-primary w-100 mb-2" onClick={() => {
-              Swal.fire({
-                title: 'Informasi Akun',
-                html: `<div style="text-align: left;">
-                  <p><strong>ID Pengguna:</strong> ${user?.id || 'Demo ID'}</p>
-                  <p><strong>Email:</strong> ${emailSession}</p>
-                  <p><strong>Status Konfirmasi:</strong> ${user?.email_confirmed_at ? 'Terkonfirmasi' : 'Belum Dikonfirmasi / Demo'}</p>
-                  <p><strong>Terakhir Masuk:</strong> ${user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : 'Sekarang'}</p>
-                </div>`,
-                icon: 'info',
-                confirmButtonColor: '#6366f1'
-              });
-            }}>Lihat Info Sesi</button>
-            <button className="btn btn-outline-secondary w-100" onClick={async () => {
-              const result = await Swal.fire({
-                title: 'Ubah Kata Sandi',
-                text: `Kirim email konfirmasi ke ${emailSession} untuk merubah kata sandi Anda?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Kirim Email Reset',
-                cancelButtonText: 'Batal',
-                confirmButtonColor: '#6366f1',
-                cancelButtonColor: '#64748b'
-              });
-              
-              if (result.isConfirmed) {
-                try {
-                  Swal.fire({
-                    title: 'Mengirim...',
-                    text: 'Mengirim email pemulihan kata sandi...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                      Swal.showLoading();
-                    }
-                  });
 
-                  const { error } = await supabase.auth.resetPasswordForEmail(emailSession, {
-                    redirectTo: window.location.origin + '/dashboard/settings'
-                  });
-
-                  if (error) throw error;
-
-                  Swal.close(); // Close loading spinner
-                  gooeyToast.success(`Email instruksi perubahan kata sandi telah dikirim ke ${emailSession}.`);
-                } catch (err) {
-                  console.error('Error resetting password:', err.message);
-                  Swal.close(); // Close loading spinner
-                  gooeyToast.error('Gagal Mengirim: ' + err.message);
-                }
-              }
-            }}>Ubah Password</button>
+            <button className="btn btn-outline-secondary btn-sm w-100 rounded-pill py-2" onClick={handleSendResetEmail}>
+              <i className="bi bi-envelope-at me-1.5"></i> Kirim Email Reset Password
+            </button>
           </div>
         </div>
-        
-        <div className="col-lg-8 mb-4">
-          <div className="data-table-container">
-            <h5 className="mb-3">Pengaturan Sistem</h5>
-            {loading ? (
-              <div className="text-center py-5">
-                <div className="spinner-border spinner-border-sm text-primary" role="status"></div>
-                <p className="mt-2 text-muted small">Memuat pengaturan...</p>
-              </div>
-            ) : (
-              <form onSubmit={handleSaveSettings}>
-                <div className="mb-3">
-                  <label htmlFor="gym-name" className="form-label">Nama Fasilitas / Area IPS</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    id="gym-name" 
-                    value={gymProfile.name}
-                    onChange={e => setGymProfile({ ...gymProfile, name: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="gym-address" className="form-label">Alamat / Lokasi Gedung</label>
-                  <textarea 
-                    className="form-control" 
-                    id="gym-address" 
-                    rows="2" 
-                    value={gymProfile.address}
-                    onChange={e => setGymProfile({ ...gymProfile, address: e.target.value })}
-                    required
-                  ></textarea>
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="gym-phone" className="form-label">Telepon Kontak</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    id="gym-phone" 
-                    value={gymProfile.telp}
-                    onChange={e => setGymProfile({ ...gymProfile, telp: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="gym-email" className="form-label">Email Kontak</label>
-                  <input 
-                    type="email" 
-                    className="form-control" 
-                    id="gym-email" 
-                    value={gymProfile.email}
-                    onChange={e => setGymProfile({ ...gymProfile, email: e.target.value })}
-                    required
-                  />
-                </div>
-                
-                <div className="mb-4">
-                  <label className="form-label fw-bold">Jam Operasional Fasilitas</label>
-                  <div className="row g-3">
-                    <div className="col-md-6">
-                      <div className="p-3 bg-light rounded shadow-sm border border-light-subtle">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <div className="fw-bold text-primary" style={{ fontSize: '13px' }}>Hari Kerja (Senin - Jumat)</div>
-                          <div className="form-check form-switch mb-0">
-                            <input 
-                              className="form-check-input" 
-                              type="checkbox" 
-                              id="weekday-closed" 
-                              checked={weekdayClosed}
-                              onChange={e => setWeekdayClosed(e.target.checked)}
-                            />
-                            <label className="form-check-label text-muted small" htmlFor="weekday-closed">Libur</label>
-                          </div>
-                        </div>
-                        <div className="d-flex align-items-center gap-2">
-                          <input 
-                            type="time" 
-                            className="form-control form-control-sm" 
-                            value={weekdayOpen}
-                            onChange={e => setWeekdayOpen(e.target.value)}
-                            disabled={weekdayClosed}
-                            required={!weekdayClosed}
-                          />
-                          <span className="text-muted small">s/d</span>
-                          <input 
-                            type="time" 
-                            className="form-control form-control-sm" 
-                            value={weekdayClose}
-                            onChange={e => setWeekdayClose(e.target.value)}
-                            disabled={weekdayClosed}
-                            required={!weekdayClosed}
-                          />
-                        </div>
-                        {weekdayClosed && (
-                          <div className="text-danger small mt-2 fw-semibold animate-fade-in" style={{ fontSize: '11px' }}>
-                            ⚠️ Gym Ditetapkan Tutup / Libur pada Hari Kerja.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="col-md-6">
-                      <div className="p-3 bg-light rounded shadow-sm border border-light-subtle">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <div className="fw-bold text-success" style={{ fontSize: '13px' }}>Akhir Pekan (Sabtu - Minggu)</div>
-                          <div className="form-check form-switch mb-0">
-                            <input 
-                              className="form-check-input" 
-                              type="checkbox" 
-                              id="weekend-closed" 
-                              checked={weekendClosed}
-                              onChange={e => setWeekendClosed(e.target.checked)}
-                            />
-                            <label className="form-check-label text-muted small" htmlFor="weekend-closed">Libur</label>
-                          </div>
-                        </div>
-                        <div className="d-flex align-items-center gap-2">
-                          <input 
-                            type="time" 
-                            className="form-control form-control-sm" 
-                            value={weekendOpen}
-                            onChange={e => setWeekendOpen(e.target.value)}
-                            disabled={weekendClosed}
-                            required={!weekendClosed}
-                          />
-                          <span className="text-muted small">s/d</span>
-                          <input 
-                            type="time" 
-                            className="form-control form-control-sm" 
-                            value={weekendClose}
-                            onChange={e => setWeekendClose(e.target.value)}
-                            disabled={weekendClosed}
-                            required={!weekendClosed}
-                          />
-                        </div>
-                        {weekendClosed && (
-                          <div className="text-danger small mt-2 fw-semibold animate-fade-in" style={{ fontSize: '11px' }}>
-                            ⚠️ Gym Ditetapkan Tutup / Libur pada Akhir Pekan.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="form-check form-switch mb-3">
-                  <input className="form-check-input" type="checkbox" id="auto-checkout" defaultChecked />
-                  <label className="form-check-label" htmlFor="auto-checkout">
-                    Auto Checkout Member (setelah 12 jam)
-                  </label>
-                </div>
-                <div className="form-check form-switch mb-3">
-                  <input className="form-check-input" type="checkbox" id="email-notifications" defaultChecked />
-                  <label className="form-check-label" htmlFor="email-notifications">
-                    Kirim Notifikasi Email untuk Member Baru
-                  </label>
-                </div>
-                <button type="submit" className="btn btn-primary px-4">
-                  Simpan Pengaturan
+        {/* Right Column: Update Profile & Change Password */}
+        <div className="col-lg-8 mb-4">
+          {/* Form Update Profile Name */}
+          <div className="card border-0 shadow-sm p-4 mb-4" style={{ borderRadius: '16px' }}>
+            <h5 className="fw-bold mb-1 text-dark">Informasi Profil Pengguna</h5>
+            <p className="text-muted small mb-4">Perbarui nama dan rincian identitas akun Anda di sistem IPS</p>
+
+            <form onSubmit={handleUpdateProfile}>
+              <div className="mb-3">
+                <label className="form-label text-muted small fw-bold">Nama Lengkap</label>
+                <input
+                  type="text"
+                  className="form-control py-2"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Masukkan nama lengkap Anda"
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="form-label text-muted small fw-bold">Alamat Email (Login)</label>
+                <input
+                  type="email"
+                  className="form-control py-2 bg-light"
+                  value={displayEmail}
+                  disabled
+                  readOnly
+                />
+                <div className="form-text text-muted small">Email digunakan sebagai ID otentikasi login utama Anda.</div>
+              </div>
+
+              <div className="d-flex justify-content-end">
+                <button type="submit" className="btn btn-primary px-4 py-2 rounded-pill fw-semibold" disabled={updatingProfile}>
+                  {updatingProfile ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-floppy me-1.5"></i> Simpan Profil
+                    </>
+                  )}
                 </button>
-              </form>
-            )}
+              </div>
+            </form>
+          </div>
+
+          {/* Form Change Password */}
+          <div className="card border-0 shadow-sm p-4" style={{ borderRadius: '16px' }}>
+            <h5 className="fw-bold mb-1 text-dark">Keamanan & Ubah Kata Sandi</h5>
+            <p className="text-muted small mb-4">Perbarui kata sandi akun Anda secara langsung</p>
+
+            <form onSubmit={handleChangePassword}>
+              <div className="mb-3">
+                <label className="form-label text-muted small fw-bold">Kata Sandi Baru</label>
+                <input
+                  type="password"
+                  className="form-control py-2"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Minimal 6 karakter"
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="form-label text-muted small fw-bold">Konfirmasi Kata Sandi Baru</label>
+                <input
+                  type="password"
+                  className="form-control py-2"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Ulangi kata sandi baru"
+                  required
+                />
+              </div>
+
+              <div className="d-flex justify-content-end">
+                <button type="submit" className="btn btn-primary px-4 py-2 rounded-pill fw-semibold" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+                      Memproses...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-key-fill me-1.5"></i> Perbarui Kata Sandi
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
