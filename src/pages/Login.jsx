@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { gooeyToast } from 'goey-toast';
 
@@ -85,7 +85,7 @@ const Login = () => {
               </label>
             </div>
 
-            <button type="submit" className="btn btn-primary btn-login" disabled={loading}>
+            <button type="submit" className="btn btn-primary btn-login mb-3" disabled={loading}>
               {loading ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -93,6 +93,13 @@ const Login = () => {
                 </>
               ) : 'Masuk'}
             </button>
+
+            <div className="text-center mt-2">
+              <span className="text-muted small">Belum memiliki akun? </span>
+              <Link to="/register" className="fw-bold text-decoration-none" style={{ color: '#6366f1' }}>
+                Daftar di sini
+              </Link>
+            </div>
           </form>
         </div>
       </div>
