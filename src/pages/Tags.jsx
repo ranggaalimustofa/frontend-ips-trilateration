@@ -234,7 +234,7 @@ const Tags = () => {
               <input
                 type="text"
                 className="form-control border-start-0 ps-0"
-                placeholder="Cari berdasarkan ID Tag atau Nama Member..."
+                placeholder="Cari berdasarkan ID Tag atau Nama Subjek..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -275,7 +275,7 @@ const Tags = () => {
       <div className="data-table-container">
         <div className="table-header">
           <div>
-            <h5>Daftar Smart Tag</h5>
+            <h5>Daftar Smart Tag & Subjek</h5>
             <p className="text-muted mb-0">Total {filteredTags.length} dari {tags.length} tag terdaftar</p>
           </div>
           <div>
@@ -298,7 +298,7 @@ const Tags = () => {
               <thead>
                 <tr>
                   <th>ID Tag</th>
-                  <th>Pemegang Member</th>
+                  <th>Subjek / Pemegang Tag</th>
                   <th>Telemetri Baterai</th>
                   <th>Status Koneksi</th>
                   <th>Terakhir Terdeteksi</th>

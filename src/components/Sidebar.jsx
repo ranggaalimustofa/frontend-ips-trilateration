@@ -40,53 +40,24 @@ const Sidebar = ({ isActive, isCollapsed, toggleSidebar, toggleSidebarDesktop })
           </NavLink>
         </li>
         <li>
-          <NavLink to="/dashboard/members" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-            <i className="bi bi-people"></i> <span>Data Subjek / User</span>
-          </NavLink>
-        </li>
-        <li>
-          <NavLink to="/dashboard/presence" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-            <i className="bi bi-calendar-check"></i> <span>Log Presensi Area</span>
-          </NavLink>
-        </li>
-        <li>
           <NavLink to="/dashboard/tags" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-            <i className="bi bi-tag"></i> <span>Manajemen Smart Tag</span>
+            <i className="bi bi-tag"></i> <span>Smart Tag & Subjek</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/dashboard/reports" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-            <i className="bi bi-file-earmark-bar-graph"></i> <span>Laporan & Analisis</span>
+          <NavLink to="/dashboard/gym-layout" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
+            <i className="bi bi-map"></i> <span>Tata Letak Denah Area</span>
           </NavLink>
         </li>
         <li>
-          <a 
-            href="#" 
-            className="menu-item" 
-            onClick={(e) => { e.preventDefault(); setIsSettingsOpen(!isSettingsOpen); }}
-          >
+          <NavLink to="/dashboard/device" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
+            <i className="bi bi-broadcast"></i> <span>Anchor & Gateway</span>
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/dashboard/settings" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
             <i className="bi bi-gear"></i> <span>Pengaturan Sistem</span>
-            <i className={`bi bi-chevron-${isSettingsOpen ? 'up' : 'down'} ms-auto`} style={{fontSize: '0.8rem', marginRight: 0}}></i>
-          </a>
-          {isSettingsOpen && (
-            <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
-              <li>
-                <NavLink to="/dashboard/settings" end className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} style={{ paddingLeft: '45px', fontSize: '0.95em' }} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-                  <i className="bi bi-circle" style={{ fontSize: '0.5rem', marginRight: '10px' }}></i> <span>Profil Fasilitas</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/dashboard/gym-layout" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} style={{ paddingLeft: '45px', fontSize: '0.95em' }} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-                  <i className="bi bi-circle" style={{ fontSize: '0.5rem', marginRight: '10px' }}></i> <span>Tata Letak Denah Area</span>
-                </NavLink>
-              </li>
-              <li>
-                <NavLink to="/dashboard/device" className={({ isActive }) => `menu-item ${isActive ? 'active' : ''}`} style={{ paddingLeft: '45px', fontSize: '0.95em' }} onClick={() => window.innerWidth <= 992 && toggleSidebar()}>
-                  <i className="bi bi-circle" style={{ fontSize: '0.5rem', marginRight: '10px' }}></i> <span>Anchor & Gateway</span>
-                </NavLink>
-              </li>
-            </ul>
-          )}
+          </NavLink>
         </li>
         {user?.user_metadata?.role === 'superadmin' && (
           <li>

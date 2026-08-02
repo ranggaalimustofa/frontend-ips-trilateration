@@ -212,8 +212,8 @@ const DeviceSettings = () => {
     <div id="device-settings-content" className="p-2">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 className="mb-1">Pengaturan Perangkat</h2>
-          <p className="text-muted mb-0">Kelola Node UWB Anchor, Tag Keanggotaan, dan Pembaruan Firmware MCU</p>
+          <h2 className="mb-1">Pengaturan Anchor & Gateway MCU</h2>
+          <p className="text-muted mb-0">Kelola titik koordinat Node Anchor IPS dan Pembaruan Firmware MCU</p>
         </div>
       </div>
 

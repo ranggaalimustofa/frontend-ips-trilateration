@@ -4,9 +4,6 @@ import Login from './pages/Login';
 import DashboardLayout from './layouts/DashboardLayout';
 import Dashboard from './pages/Dashboard';
 import PositionMonitoring from './pages/PositionMonitoring';
-import Members from './pages/Members';
-import Presence from './pages/Presence';
-import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import GymSettings from './pages/GymSettings';
 import DeviceSettings from './pages/DeviceSettings';
@@ -74,9 +71,6 @@ function App() {
           <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
             <Route index element={<Dashboard />} />
             <Route path="position" element={<PositionMonitoring />} />
-            <Route path="members" element={<Members />} />
-            <Route path="presence" element={<Presence />} />
-            <Route path="reports" element={<Reports />} />
             <Route path="tags" element={<Tags />} />
             <Route path="settings" element={<Settings />} />
             <Route path="gym-layout" element={<GymSettings />} />

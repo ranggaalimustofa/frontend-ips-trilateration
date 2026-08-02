@@ -386,7 +386,7 @@ const Dashboard = () => {
         <div className="col-lg-8 mb-4">
           <div className="data-table-container shadow-sm border-0" style={{ height: '100%', minHeight: '300px' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="mb-0">Tren Kehadiran Mingguan</h5>
+              <h5 className="mb-0">Tren Pergerakan & Aktivitas Subjek</h5>
               <button className="btn btn-sm btn-outline-primary rounded-pill px-3" onClick={fetchDashboardData}>
                 <i className="bi bi-arrow-clockwise me-1"></i> Refresh
               </button>
@@ -398,7 +398,7 @@ const Dashboard = () => {
         </div>
         <div className="col-lg-4 mb-4">
           <div className="data-table-container shadow-sm border-0" style={{ height: '100%' }}>
-            <h5 className="mb-3">Aktivitas Kehadiran Terbaru</h5>
+            <h5 className="mb-3">Log Pergerakan Real-time</h5>
             <div className="activity-list">
               {loading ? (
                 <div className="text-center py-5">
@@ -407,7 +407,7 @@ const Dashboard = () => {
                 </div>
               ) : activities.length === 0 ? (
                 <div className="text-center py-5 text-muted small">
-                  Belum ada aktivitas kehadiran hari ini.
+                  Belum ada pergerakan tag terdeteksi hari ini.
                 </div>
               ) : (
                 activities.map((act) => (
