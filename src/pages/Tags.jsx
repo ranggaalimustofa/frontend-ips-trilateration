@@ -6,7 +6,7 @@ import { formatDateIndo } from '../utils/dateFormatter';
 
 const Tags = () => {
   const [tags, setTags] = useState([]);
-  const [members, setMembers] = useState([]);
+  const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
   
   // Filters State
@@ -17,28 +17,28 @@ const Tags = () => {
   // Form Modal State
   const [showModal, setShowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [tagForm, setTagForm] = useState({ tagId: '', memberId: '' });
+  const [tagForm, setTagForm] = useState({ tagId: '', name: '', subjectId: '' });
 
-  // Load tags and members
+  // Load tags and subjects
   const fetchData = async () => {
     try {
       setLoading(true);
       
-      // 1. Fetch tags and nested members
+      // 1. Fetch tags and nested subjects
       const { data: tagData, error: tagError } = await supabase
         .from('tags')
-        .select('*, members(name)')
+        .select('*, subjects(name)')
         .order('created_at', { ascending: false });
       if (tagError) throw tagError;
       setTags(tagData || []);
 
-      // 2. Fetch members for mapping dropdown
-      const { data: memberData, error: memberError } = await supabase
-        .from('members')
-        .select('memberId, name')
+      // 2. Fetch subjects for mapping dropdown
+      const { data: subjectData, error: subjectError } = await supabase
+        .from('subjects')
+        .select('subjectId, name')
         .order('name', { ascending: true });
-      if (memberError) throw memberError;
-      setMembers(memberData || []);
+      if (subjectError) throw subjectError;
+      setSubjects(subjectData || []);
 
     } catch (err) {
       console.error('Error fetching tags data:', err);
@@ -72,13 +72,13 @@ const Tags = () => {
   // CRUD Actions
   const handleOpenAdd = () => {
     setIsEditMode(false);
-    setTagForm({ tagId: '', memberId: '' });
+    setTagForm({ tagId: '', name: '', subjectId: '' });
     setShowModal(true);
   };
 
   const handleOpenEdit = (tag) => {
     setIsEditMode(true);
-    setTagForm({ tagId: tag.tagId, memberId: tag.memberId || '' });
+    setTagForm({ tagId: tag.tagId, name: tag.name || '', subjectId: tag.subjectId || '' });
     setShowModal(true);
   };
 
@@ -90,11 +90,16 @@ const Tags = () => {
     }
 
     const savePromise = (async () => {
+      const payload = {
+        name: tagForm.name.trim(),
+        subjectId: tagForm.subjectId || null
+      };
+
       if (isEditMode) {
-        // Update tag linkage
+        // Update tag details
         const { error } = await supabase
           .from('tags')
-          .update({ memberId: tagForm.memberId || null })
+          .update(payload)
           .eq('tagId', tagForm.tagId);
         if (error) throw error;
       } else {
@@ -102,8 +107,8 @@ const Tags = () => {
         const { error } = await supabase
           .from('tags')
           .insert([{ 
-            tagId: tagForm.tagId.trim(), 
-            memberId: tagForm.memberId || null,
+            tagId: tagForm.tagId.trim(),
+            ...payload,
             battery_level: 100,
             last_seen: new Date().toISOString()
           }]);
@@ -115,8 +120,8 @@ const Tags = () => {
     })();
 
     gooeyToast.promise(savePromise, {
-      loading: isEditMode ? 'Memperbarui kaitan tag...' : 'Mendaftarkan smart tag baru...',
-      success: isEditMode ? 'Kaitan Tag berhasil diperbarui!' : 'Smart Tag baru berhasil didaftarkan!',
+      loading: isEditMode ? 'Memperbarui data tag...' : 'Mendaftarkan smart tag baru...',
+      success: isEditMode ? 'Data Smart Tag berhasil diperbarui!' : 'Smart Tag baru berhasil didaftarkan!',
       error: (err) => `Gagal menyimpan: ${err.message}`
     });
   };
@@ -159,10 +164,11 @@ const Tags = () => {
     
     const bat = tag.battery_level !== undefined ? tag.battery_level : 100;
 
-    // Search filter
+    // Search filter (match tagId, name, or paired subject name)
     const matchesSearch = 
       tag.tagId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (tag.members?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+      (tag.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (tag.subjects?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
 
     // Status filter
     let matchesStatus = true;
@@ -234,7 +240,7 @@ const Tags = () => {
               <input
                 type="text"
                 className="form-control border-start-0 ps-0"
-                placeholder="Cari berdasarkan ID Tag atau Nama Subjek..."
+                placeholder="Cari berdasarkan Nama Tag, ID, atau Subjek..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -298,7 +304,8 @@ const Tags = () => {
               <thead>
                 <tr>
                   <th>ID Tag</th>
-                  <th>Subjek / Pemegang Tag</th>
+                  <th>Nama Tag</th>
+                  <th>Subjek / Terikat ke</th>
                   <th>Telemetri Baterai</th>
                   <th>Status Koneksi</th>
                   <th>Terakhir Terdeteksi</th>
@@ -309,7 +316,7 @@ const Tags = () => {
               <tbody>
                 {filteredTags.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="text-center p-5 text-muted">
+                    <td colSpan="8" className="text-center p-5 text-muted">
                       Tidak ada data Smart Tag ditemukan yang cocok.
                     </td>
                   </tr>
@@ -333,18 +340,19 @@ const Tags = () => {
 
                     return (
                       <tr key={tag.tagId}>
-                        <td className="fw-semibold font-monospace">{tag.tagId}</td>
+                        <td className="fw-semibold font-monospace text-primary">{tag.tagId}</td>
+                        <td className="fw-bold text-dark">{tag.name || tag.tagId}</td>
                         <td>
-                          {tag.members ? (
+                          {tag.subjects ? (
                             <div className="d-flex align-items-center">
-                              <div className="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-2" style={{ width: '32px', height: '32px', fontSize: '0.85rem', fontWeight: 'bold' }}>
-                                {tag.members.name.charAt(0).toUpperCase()}
+                              <div className="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center me-2" style={{ width: '28px', height: '28px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                {tag.subjects.name.charAt(0).toUpperCase()}
                               </div>
-                              <span className="fw-semibold text-dark">{tag.members.name}</span>
+                              <span className="fw-semibold text-dark">{tag.subjects.name}</span>
                             </div>
                           ) : (
                             <span className="text-muted small italic">
-                              <i className="bi bi-exclamation-circle me-1"></i>Belum Dikaitkan
+                              <i className="bi bi-exclamation-circle me-1"></i>Belum Terikat
                             </span>
                           )}
                         </td>
@@ -373,10 +381,10 @@ const Tags = () => {
                           <div className="action-buttons justify-content-end">
                             <button
                               className="btn-action btn-edit"
-                              title="Edit Pengikatan Member"
+                              title="Edit Data Tag"
                               onClick={() => handleOpenEdit(tag)}
                             >
-                              <i className="bi bi-link-45deg"></i>
+                              <i className="bi bi-pencil"></i>
                             </button>
                             <button
                               className="btn-action btn-delete"
@@ -405,7 +413,7 @@ const Tags = () => {
               <div className="modal-header border-bottom-0 pt-4 px-4">
                 <h5 className="modal-title fw-bold text-dark">
                   {isEditMode ? (
-                    <span><i className="bi bi-link-45deg text-primary me-2"></i>Kaitkan Smart Tag</span>
+                    <span><i className="bi bi-pencil text-primary me-2"></i>Edit Data Smart Tag</span>
                   ) : (
                     <span><i className="bi bi-plus-circle text-primary me-2"></i>Daftarkan Smart Tag Baru</span>
                   )}
@@ -416,34 +424,47 @@ const Tags = () => {
               <form onSubmit={handleSave}>
                 <div className="modal-body px-4 pb-4">
                   <div className="mb-3">
-                    <label className="form-label text-muted small fw-bold">ID Smart Tag (Kunci Utama)</label>
+                    <label className="form-label text-muted small fw-bold">ID Smart Tag (Kunci Hardware)</label>
                     <input
                       type="text"
                       className="form-control py-2 font-monospace"
                       value={tagForm.tagId}
                       disabled={isEditMode}
                       onChange={(e) => setTagForm({ ...tagForm, tagId: e.target.value })}
-                      placeholder="Cth: tag-09"
+                      placeholder="Cth: tag-01"
                       required
                     />
                     {!isEditMode && <div className="form-text text-muted small">Masukkan kode ID unik perangkat keras tag fisik.</div>}
                   </div>
+
+                  <div className="mb-3">
+                    <label className="form-label text-muted small fw-bold">Nama Smart Tag</label>
+                    <input
+                      type="text"
+                      className="form-control py-2"
+                      value={tagForm.name}
+                      onChange={(e) => setTagForm({ ...tagForm, name: e.target.value })}
+                      placeholder="Cth: Smart Tag Subjek A / Tag Troli #1"
+                      required
+                    />
+                    <div className="form-text text-muted small">Berikan nama identifikasi yang mudah dikenali untuk tag ini.</div>
+                  </div>
                   
                   <div className="mb-3">
-                    <label className="form-label text-muted small fw-bold">Kaitkan dengan Anggota Gym (Member)</label>
+                    <label className="form-label text-muted small fw-bold">Kaitkan dengan Subjek / Entitas (Opsional)</label>
                     <select
                       className="form-select py-2"
-                      value={tagForm.memberId}
-                      onChange={(e) => setTagForm({ ...tagForm, memberId: e.target.value })}
+                      value={tagForm.subjectId}
+                      onChange={(e) => setTagForm({ ...tagForm, subjectId: e.target.value })}
                     >
                       <option value="">-- Tanpa Kaitan (Biarkan Kosong) --</option>
-                      {members.map((m) => (
-                        <option key={m.memberId} value={m.memberId}>
-                          {m.name} ({m.memberId})
+                      {subjects.map((s) => (
+                        <option key={s.subjectId} value={s.subjectId}>
+                          {s.name} ({s.subjectId})
                         </option>
                       ))}
                     </select>
-                    <div className="form-text text-muted small">Pasangkan tag ini ke anggota gym yang meminjamnya hari ini.</div>
+                    <div className="form-text text-muted small">Pasangkan tag ini ke subjek pengguna atau aset yang dipantau.</div>
                   </div>
                 </div>
 
