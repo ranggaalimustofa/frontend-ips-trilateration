@@ -340,11 +340,11 @@ const PositionMonitoring = () => {
       });
     });
 
-    // Watchdog timer: re-evaluate active tags and offline anchors every 3 seconds
+    // Watchdog timer: re-evaluate active tags and offline anchors every 1 second for real-time visibility
     const watchdog = setInterval(() => {
-      setActiveMembers(prev => [...prev]); // force re-evaluate filtering threshold
+      setActiveMembers(prev => [...prev]); // force re-evaluate filtering threshold every 1s
       setAnchorStatus(prev => ({ ...prev }));
-    }, 3000);
+    }, 1000);
 
     return () => {
       clearInterval(watchdog);
@@ -417,15 +417,15 @@ const PositionMonitoring = () => {
     });
   };
 
-  const DETECTED_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes detection window
+  const REALTIME_SIGNAL_TIMEOUT_MS = 12 * 1000; // 12 seconds real-time timeout window
 
-  // Filter Logic: Only display tags that are actively detected (last_seen within 10 minutes)
+  // Filter Logic: Only display tags that are actively detected in real-time (last_seen within 12 seconds)
   const filteredMembers = activeMembers.filter((m) => {
     const isDetected = m.last_seen 
-      ? (Date.now() - new Date(m.last_seen).getTime() < DETECTED_THRESHOLD_MS) 
+      ? (Date.now() - new Date(m.last_seen).getTime() < REALTIME_SIGNAL_TIMEOUT_MS) 
       : false;
 
-    // IF TAG IS NOT DETECTED (NO SIGNAL FOR > 10 MINUTES), DO NOT DISPLAY
+    // IF NO REALTIME SIGNAL IN THE LAST 12 SECONDS, DO NOT DISPLAY NODE ON CANVAS
     if (!isDetected) return false;
 
     const matchesStatus =
