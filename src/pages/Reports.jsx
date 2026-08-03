@@ -147,11 +147,11 @@ const Reports = () => {
       const logsList = logData || [];
       setLogsData(logsList);
 
-      // 5. Fetch Gym Profile
+      // 5. Fetch Facility Profile
       const { data: profileData } = await supabase
-        .from('gym_profiles')
+        .from('facility_profiles')
         .select('*')
-        .eq('gymId', 1)
+        .eq('facilityId', 1)
         .single();
       setGymProfile(profileData || null);
 

@@ -72,11 +72,11 @@ const PositionMonitoring = () => {
     try {
       setLoading(true);
       
-      // 0. Fetch gym profile scale settings
+      // 0. Fetch facility profile scale settings
       const { data: gymProfile, error: profileError } = await supabase
-        .from('gym_profiles')
+        .from('facility_profiles')
         .select('images')
-        .eq('gymId', 1)
+        .eq('facilityId', 1)
         .single();
 
       let currentScalePixels = scalePixels;

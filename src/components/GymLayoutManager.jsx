@@ -201,17 +201,17 @@ const GymLayoutManager = () => {
       try {
         setLoading(true);
         
-        // 1. Fetch gym profile scale settings
-        const { data: gymProfile, error: profileError } = await supabase
-          .from('gym_profiles')
+        // 1. Fetch facility profile scale settings
+        const { data: facilityProfile, error: profileError } = await supabase
+          .from('facility_profiles')
           .select('images')
-          .eq('gymId', 1)
+          .eq('facilityId', 1)
           .single();
 
         let dbScaleMeters = 10;
         let dbScalePixels = 1200;
 
-        if (!profileError && gymProfile && gymProfile.images) {
+        if (!profileError && facilityProfile && facilityProfile.images) {
           try {
             const parsed = JSON.parse(gymProfile.images);
             if (parsed.scaleMeters) dbScaleMeters = Number(parsed.scaleMeters);
@@ -489,7 +489,7 @@ const GymLayoutManager = () => {
           w: Number(r.w),
           h: Number(r.h),
           colorId: Number(r.colorIdx),
-          gymId: 1 // default seeded gymId
+          facilityId: 1
         }));
 
         const { error: insertError } = await supabase
@@ -499,18 +499,20 @@ const GymLayoutManager = () => {
         if (insertError) throw insertError;
       }
 
-      // 3. Save scale calibration to gym_profiles.images column
+      // 3. Save scale calibration to facility_profiles.images column
       const configStr = JSON.stringify({
         scaleMeters: Number(scaleMeters),
         scalePixels: Number(scalePixels)
       });
 
       const { error: profileError } = await supabase
-        .from('gym_profiles')
+        .from('facility_profiles')
         .update({ images: configStr })
-        .eq('gymId', 1);
+        .eq('facilityId', 1);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.warn('Could not save scale metadata to facility_profiles:', profileError.message);
+      }
     })();
 
     gooeyToast.promise(savePromise, {

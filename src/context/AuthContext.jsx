@@ -13,17 +13,17 @@ export const AuthProvider = ({ children }) => {
   const fetchGymProfile = async () => {
     try {
       const { data, error } = await supabase
-        .from('gym_profiles')
+        .from('facility_profiles')
         .select('*')
-        .eq('gymId', 1)
+        .eq('facilityId', 1)
         .single();
       
       if (!error && data) {
         setGymProfile(data);
-        document.title = data.name;
+        document.title = data.name || 'IPS Indoors Positioning System';
       }
     } catch (err) {
-      console.error('Error fetching gym profile name:', err);
+      console.error('Error fetching facility profile name:', err);
     }
   };
 
