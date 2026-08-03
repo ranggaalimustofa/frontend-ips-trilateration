@@ -1363,45 +1363,77 @@ const Reports = () => {
             const logs = getFilteredLogs();
             const totalLogsCount = logs.length || 1;
             return (
-              <table style={tableStyle}>
-                <thead>
-                  <tr>
-                    <th style={thStyle}>Nama Ruangan</th>
-                    <th style={thStyle}>Lebar (px)</th>
-                    <th style={thStyle}>Tinggi (px)</th>
-                    <th style={thStyle}>Total Hit Logs</th>
-                    <th style={thStyle}>Persentase</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rooms.length === 0 ? (
+              <div>
+                <h6 style={{ fontSize: '13px', fontWeight: 'bold', color: '#334155', marginBottom: '8px' }}>1. Rekapitulasi Penggunaan Ruangan</h6>
+                <table style={{ ...tableStyle, marginBottom: '20px' }}>
+                  <thead>
                     <tr>
-                      <td colSpan="5" style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8' }}>Tidak ada data.</td>
+                      <th style={thStyle}>Nama Ruangan / Area</th>
+                      <th style={thStyle}>Total Hit Logs</th>
+                      <th style={thStyle}>Persentase Kunjungan</th>
                     </tr>
-                  ) : (
-                    rooms.map((room, idx) => {
-                      const count = logs.filter(log => {
-                        const lx = Number(log.x_position);
-                        const ly = Number(log.y_position);
-                        return lx >= Number(room.x) &&
-                               lx <= Number(room.x) + Number(room.w) &&
-                               ly >= Number(room.y) &&
-                               ly <= Number(room.y) + Number(room.h);
-                      }).length;
-                      const pct = ((count / totalLogsCount) * 100).toFixed(1) + '%';
-                      return (
+                  </thead>
+                  <tbody>
+                    {rooms.length === 0 ? (
+                      <tr>
+                        <td colSpan="3" style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8' }}>Tidak ada data ruangan.</td>
+                      </tr>
+                    ) : (
+                      rooms.map((room, idx) => {
+                        const count = logs.filter(log => {
+                          if (log.area_name) return log.area_name === room.name;
+                          const lx = Number(log.x_position) * 120;
+                          const ly = Number(log.y_position) * 120;
+                          return lx >= Number(room.x) &&
+                                 lx <= Number(room.x) + Number(room.w) &&
+                                 ly >= Number(room.y) &&
+                                 ly <= Number(room.y) + Number(room.h);
+                        }).length;
+                        const pct = ((count / totalLogsCount) * 100).toFixed(1) + '%';
+                        return (
+                          <tr key={idx}>
+                            <td style={{ ...tdStyle, fontWeight: 'bold' }}>{room.name}</td>
+                            <td style={{ ...tdStyle, color: '#4f46e5', fontWeight: 'bold' }}>{count} Hit</td>
+                            <td style={tdStyle}>{pct}</td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+
+                <h6 style={{ fontSize: '13px', fontWeight: 'bold', color: '#334155', marginBottom: '8px' }}>2. Log Rekam Jejak Posisi Detail (Position Logs)</h6>
+                <table style={tableStyle}>
+                  <thead>
+                    <tr>
+                      <th style={thStyle}>Waktu</th>
+                      <th style={thStyle}>ID Tag</th>
+                      <th style={thStyle}>Koordinat X, Y (m)</th>
+                      <th style={thStyle}>Area / Zona Terdeteksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {logs.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" style={{ ...tdStyle, textAlign: 'center', color: '#94a3b8' }}>Belum ada log rekam jejak posisi.</td>
+                      </tr>
+                    ) : (
+                      logs.slice(0, 100).map((log, idx) => (
                         <tr key={idx}>
-                          <td style={{ ...tdStyle, fontWeight: 'bold' }}>{room.name}</td>
-                          <td style={tdStyle}>{Math.round(room.w)}px</td>
-                          <td style={tdStyle}>{Math.round(room.h)}px</td>
-                          <td style={{ ...tdStyle, color: '#4f46e5', fontWeight: 'bold' }}>{count} Hit</td>
-                          <td style={tdStyle}>{pct}</td>
+                          <td style={{ ...tdStyle, fontSize: '11px' }}>{new Date(log.timestamp).toLocaleString('id-ID')}</td>
+                          <td style={{ ...tdStyle, fontFamily: 'monospace', fontWeight: 'bold', color: '#4f46e5' }}>{log.tagId}</td>
+                          <td style={{ ...tdStyle, fontFamily: 'monospace' }}>X: {Number(log.x_position).toFixed(2)}m, Y: {Number(log.y_position).toFixed(2)}m</td>
+                          <td style={{ ...tdStyle, fontWeight: 'bold' }}>
+                            <span style={{ backgroundColor: '#e0e7ff', color: '#4338ca', padding: '2px 8px', borderRadius: '12px', fontSize: '10px' }}>
+                              📍 {log.area_name || 'Area Umum'}
+                            </span>
+                          </td>
                         </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             );
           } else if (activeFilters.type === 'Laporan Member Baru' || activeFilters.type === 'Laporan Member Tidak Aktif') {
             const isInactiveOnly = activeFilters.type === 'Laporan Member Tidak Aktif';
