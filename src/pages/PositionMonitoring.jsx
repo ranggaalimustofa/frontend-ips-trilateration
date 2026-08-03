@@ -122,16 +122,20 @@ const PositionMonitoring = () => {
       const dd = String(today.getDate()).padStart(2, '0');
       const todayStr = `${yyyy}-${mm}-${dd}`;
       
-      const { data: presenceData, error: presenceError } = await supabase
-        .from('presences')
-        .select('*, members(name, member_status, tags(tagId, battery_level))')
-        .eq('date', todayStr)
-        .is('out_time', null);
-      if (presenceError) throw presenceError;
+      // 2. Fetch Active Tags & Position Logs from Supabase
+      const { data: tagData, error: tagError } = await supabase
+        .from('tags')
+        .select('*, subjects(name, status)')
+        .not('last_seen', 'is', null);
 
-      const formattedMembers = [];
-      for (const p of (presenceData || [])) {
-        const name = p.members?.name || 'Unknown Member';
+      if (tagError) {
+        console.warn('Error fetching tags:', tagError.message);
+      }
+
+      const formattedTags = [];
+      for (const t of (tagData || [])) {
+        const tagId = t.tagId;
+        const name = t.name || t.subjects?.name || tagId;
         const initials = name
           .split(' ')
           .map(n => n[0])
@@ -139,43 +143,43 @@ const PositionMonitoring = () => {
           .substring(0, 2)
           .toUpperCase();
 
-        const tag = p.members?.tags?.[0];
-        const tagId = tag?.tagId;
-        const battery = tag?.battery_level ?? 100;
+        const battery = t.battery_level ?? 100;
+        const lastSeen = t.last_seen;
 
         // Fetch latest position log from position_logs table for this tag
         let xVal = 5.7; // default coordinate in METERS
         let yVal = 0.8;
+        let logTime = t.last_seen;
 
-        if (tagId) {
-          const { data: latestLog } = await supabase
-            .from('position_logs')
-            .select('x_position, y_position')
-            .eq('tagId', tagId)
-            .order('timestamp', { ascending: false })
-            .limit(1);
+        const { data: latestLog } = await supabase
+          .from('position_logs')
+          .select('x_position, y_position, timestamp')
+          .eq('tagId', tagId)
+          .order('timestamp', { ascending: false })
+          .limit(1);
 
-          if (latestLog && latestLog.length > 0) {
-            xVal = Number(latestLog[0].x_position);
-            yVal = Number(latestLog[0].y_position);
-          }
+        if (latestLog && latestLog.length > 0) {
+          xVal = Number(latestLog[0].x_position);
+          yVal = Number(latestLog[0].y_position);
+          logTime = latestLog[0].timestamp;
         }
 
-        formattedMembers.push({
-          presenceId: p.presenceId,
-          memberId: p.memberId,
+        formattedTags.push({
+          presenceId: tagId,
+          memberId: tagId,
           tagId,
           name,
           initials,
-          status: p.members?.member_status || 'Aktif',
+          status: t.subjects?.status || 'Aktif',
           x: xVal,
           y: yVal,
-          in_time: p.in_time,
-          battery
+          in_time: logTime ? new Date(logTime).toTimeString().substring(0, 5) : '-',
+          battery,
+          last_seen: logTime || lastSeen
         });
       }
 
-      setActiveMembers(formattedMembers);
+      setActiveMembers(formattedTags);
 
       // Load anchor positions from Supabase and init status
       const { data: anchorData, error: anchorError } = await supabase
@@ -238,33 +242,37 @@ const PositionMonitoring = () => {
       console.log('Live UWB location update received:', data);
       // data format: { tagId, memberId, name, status, x, y, battery, timestamp }
       setActiveMembers((prev) => {
-        const idx = prev.findIndex((m) => m.memberId === data.memberId);
+        const tagId = data.tagId || data.memberId;
+        const idx = prev.findIndex((m) => m.tagId === tagId);
         
-        const initials = (data.name || 'M')
+        const tagName = data.name || (idx !== -1 ? prev[idx].name : tagId);
+        const initials = tagName
           .split(' ')
           .map((n) => n[0])
           .join('')
           .substring(0, 2)
           .toUpperCase();
 
-        const updatedMember = {
-          presenceId: idx !== -1 ? prev[idx].presenceId : Date.now(),
-          memberId: data.memberId,
-          name: data.name,
+        const updatedTag = {
+          presenceId: tagId,
+          memberId: tagId,
+          tagId: tagId,
+          name: tagName,
           initials,
           status: data.status || 'Aktif',
           x: Number(data.x),
           y: Number(data.y),
-          in_time: idx !== -1 ? prev[idx].in_time : new Date().toTimeString().split(' ')[0],
-          battery: data.battery !== undefined ? data.battery : (idx !== -1 ? prev[idx].battery : 100)
+          in_time: new Date().toTimeString().split(' ')[0],
+          battery: data.battery !== undefined ? data.battery : (idx !== -1 ? prev[idx].battery : 100),
+          last_seen: data.timestamp || new Date().toISOString()
         };
 
         if (idx !== -1) {
           const newList = [...prev];
-          newList[idx] = updatedMember;
+          newList[idx] = updatedTag;
           return newList;
         } else {
-          return [...prev, updatedMember];
+          return [...prev, updatedTag];
         }
       });
     });
@@ -307,10 +315,11 @@ const PositionMonitoring = () => {
       });
     });
 
-    // Heartbeat watchdog: re-evaluate status every 5 seconds to detect offline anchors
+    // Watchdog timer: re-evaluate active tags and offline anchors every 3 seconds
     const watchdog = setInterval(() => {
-      setAnchorStatus(prev => ({ ...prev })); // force re-render to recalculate elapsed time
-    }, 5000);
+      setActiveMembers(prev => [...prev]); // force re-evaluate filtering threshold
+      setAnchorStatus(prev => ({ ...prev }));
+    }, 3000);
 
     return () => {
       clearInterval(watchdog);
@@ -383,8 +392,17 @@ const PositionMonitoring = () => {
     });
   };
 
-  // Filter Logic
+  const DETECTED_THRESHOLD_MS = 2 * 60 * 1000; // 2 minutes (120 seconds)
+
+  // Filter Logic: Only display tags that are actively detected (last_seen within 2 minutes)
   const filteredMembers = activeMembers.filter((m) => {
+    const isDetected = m.last_seen 
+      ? (Date.now() - new Date(m.last_seen).getTime() < DETECTED_THRESHOLD_MS) 
+      : false;
+
+    // IF TAG IS NOT DETECTED (OFFLINE / > 2 MINUTES IDLE), DO NOT DISPLAY
+    if (!isDetected) return false;
+
     const matchesStatus =
       statusFilter === 'Semua Status' ||
       (statusFilter === 'Aktif' && m.status === 'Aktif') ||
