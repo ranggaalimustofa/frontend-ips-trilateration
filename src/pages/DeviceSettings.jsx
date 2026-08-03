@@ -47,17 +47,34 @@ const DeviceSettings = () => {
       if (anchorError) throw anchorError;
       setAnchors(anchorData || []);
 
-      // 2. Fetch members for mapping dropdown
-      const { data: memberData, error: memberError } = await supabase
-        .from('members')
-        .select('memberId, name')
-        .order('name', { ascending: true });
-      if (memberError) throw memberError;
-      setMembers(memberData || []);
-
     } catch (err) {
       console.error('Error fetching devices data:', err);
       gooeyToast.error('Gagal mengambil data perangkat: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSeedDefaultAnchors = async () => {
+    try {
+      setLoading(true);
+      const defaultAnchors = [
+        { anchorId: 'anchor-01', name: 'Anchor Node A', x_position: 0.00, y_position: 0.00, status: 'active' },
+        { anchorId: 'anchor-02', name: 'Anchor Node B', x_position: 3.50, y_position: 7.90, status: 'active' },
+        { anchorId: 'anchor-03', name: 'Anchor Node C', x_position: 7.90, y_position: 0.00, status: 'active' }
+      ];
+
+      const { error } = await supabase
+        .from('anchor_positions')
+        .upsert(defaultAnchors);
+
+      if (error) throw error;
+
+      gooeyToast.success('3 Anchor Node default berhasil dimuat!');
+      fetchDevicesData();
+    } catch (err) {
+      console.error('Error seeding default anchors:', err);
+      gooeyToast.error('Gagal memuat anchor default: ' + err.message);
     } finally {
       setLoading(false);
     }
@@ -277,8 +294,20 @@ const DeviceSettings = () => {
                   <tbody>
                     {anchors.length === 0 ? (
                       <tr>
-                        <td colSpan="6" className="text-center p-4 text-muted">
-                          Belum ada Anchor Node yang terdaftar.
+                        <td colSpan="6" className="text-center p-5">
+                          <div className="py-3">
+                            <i className="bi bi-broadcast text-muted opacity-50" style={{ fontSize: '3rem' }}></i>
+                            <h6 className="mt-3 fw-bold text-dark">Belum ada Anchor Node yang terdaftar</h6>
+                            <p className="text-muted small mb-3">Tambahkan node anchor fisik atau muat data anchor default untuk pengujian.</p>
+                            <div className="d-flex justify-content-center gap-2">
+                              <button className="btn btn-primary btn-sm rounded-pill px-3" onClick={handleOpenAddAnchor}>
+                                <i className="bi bi-plus-circle me-1"></i> Tambah Anchor Manual
+                              </button>
+                              <button className="btn btn-outline-primary btn-sm rounded-pill px-3" onClick={handleSeedDefaultAnchors}>
+                                <i className="bi bi-magic me-1"></i> Muat 3 Anchor Default
+                              </button>
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     ) : (
