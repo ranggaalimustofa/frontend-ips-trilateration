@@ -500,9 +500,6 @@ const PositionMonitoring = () => {
                           width: `${canvasSize.width}px`,
                           height: `${canvasSize.height}px`,
                           background: '#f8fafc',
-                          backgroundImage: 
-                            'linear-gradient(0deg, transparent 24%, rgba(200, 200, 200, 0.06) 25%, rgba(200, 200, 200, 0.06) 26%, transparent 27%, transparent 74%, rgba(200, 200, 200, 0.06) 75%, rgba(200, 200, 200, 0.06) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(200, 200, 200, 0.06) 25%, rgba(200, 200, 200, 0.06) 26%, transparent 27%, transparent 74%, rgba(200, 200, 200, 0.06) 75%, rgba(200, 200, 200, 0.06) 76%, transparent 77%, transparent)',
-                          backgroundSize: '40px 40px',
                           boxShadow: 'inset 0 0 40px rgba(0,0,0,0.02)',
                         }}
                       >
@@ -510,7 +507,7 @@ const PositionMonitoring = () => {
                         {bgImage && (
                           <img
                             src={bgImage}
-                            alt="Denah Gym"
+                            alt="Denah Area IPS"
                             style={{
                               position: 'absolute',
                               inset: 0,
@@ -522,6 +519,75 @@ const PositionMonitoring = () => {
                             }}
                           />
                         )}
+
+                        {/* Dynamic 1-Meter Ruler & Grid Overlay */}
+                        <svg
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            width: '100%',
+                            height: '100%',
+                            pointerEvents: 'none',
+                            zIndex: 10
+                          }}
+                        >
+                          <defs>
+                            <pattern
+                              id="meter-grid-pattern"
+                              width={scaleFactor}
+                              height={scaleFactor}
+                              patternUnits="userSpaceOnUse"
+                            >
+                              <path
+                                d={`M ${scaleFactor} 0 L 0 0 0 ${scaleFactor}`}
+                                fill="none"
+                                stroke="rgba(99, 102, 241, 0.22)"
+                                strokeWidth="1"
+                                strokeDasharray="4 2"
+                              />
+                            </pattern>
+                          </defs>
+                          {/* 1-Meter Grid Lines */}
+                          <rect width="100%" height="100%" fill="url(#meter-grid-pattern)" />
+
+                          {/* X-Axis Meter Labels (Top Ruler) */}
+                          {Array.from({ length: Math.floor(canvasSize.width / scaleFactor) + 1 }).map((_, idx) => (
+                            <g key={`ruler-x-${idx}`} transform={`translate(${idx * scaleFactor}, 0)`}>
+                              <line x1="0" y1="0" x2="0" y2="12" stroke="#6366f1" strokeWidth="2" />
+                              <rect x="-11" y="10" width="22" height="13" rx="3" fill="rgba(30, 41, 59, 0.88)" />
+                              <text
+                                x="0"
+                                y="19"
+                                fill="#ffffff"
+                                fontSize="8.5"
+                                fontWeight="bold"
+                                textAnchor="middle"
+                                fontFamily="monospace"
+                              >
+                                {idx}m
+                              </text>
+                            </g>
+                          ))}
+
+                          {/* Y-Axis Meter Labels (Left Ruler) */}
+                          {Array.from({ length: Math.floor(canvasSize.height / scaleFactor) + 1 }).map((_, idx) => (
+                            <g key={`ruler-y-${idx}`} transform={`translate(0, ${idx * scaleFactor})`}>
+                              <line x1="0" y1="0" x2="12" y2="0" stroke="#6366f1" strokeWidth="2" />
+                              <rect x="10" y="-6.5" width="22" height="13" rx="3" fill="rgba(30, 41, 59, 0.88)" />
+                              <text
+                                x="21"
+                                y="3"
+                                fill="#ffffff"
+                                fontSize="8.5"
+                                fontWeight="bold"
+                                textAnchor="middle"
+                                fontFamily="monospace"
+                              >
+                                {idx}m
+                              </text>
+                            </g>
+                          ))}
+                        </svg>
 
                         {/* Gym Rooms dynamically loaded from DB */}
                         {rooms.map((room) => {
