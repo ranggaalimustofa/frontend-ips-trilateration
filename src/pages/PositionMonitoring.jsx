@@ -125,8 +125,7 @@ const PositionMonitoring = () => {
       // 2. Fetch Active Tags & Position Logs from Supabase
       const { data: tagData, error: tagError } = await supabase
         .from('tags')
-        .select('*, subjects(name, status)')
-        .not('last_seen', 'is', null);
+        .select('*, subjects(name, status)');
 
       if (tagError) {
         console.warn('Error fetching tags:', tagError.message);
@@ -144,12 +143,12 @@ const PositionMonitoring = () => {
           .toUpperCase();
 
         const battery = t.battery_level ?? 100;
-        const lastSeen = t.last_seen;
+        const tagLastSeenMs = t.last_seen ? new Date(t.last_seen).getTime() : 0;
 
         // Fetch latest position log from position_logs table for this tag
         let xVal = 5.7; // default coordinate in METERS
         let yVal = 0.8;
-        let logTime = t.last_seen;
+        let logTimeMs = 0;
 
         const { data: latestLog } = await supabase
           .from('position_logs')
@@ -161,8 +160,11 @@ const PositionMonitoring = () => {
         if (latestLog && latestLog.length > 0) {
           xVal = Number(latestLog[0].x_position);
           yVal = Number(latestLog[0].y_position);
-          logTime = latestLog[0].timestamp;
+          logTimeMs = new Date(latestLog[0].timestamp).getTime();
         }
+
+        const mostRecentTimeMs = Math.max(tagLastSeenMs, logTimeMs);
+        const mostRecentIso = mostRecentTimeMs > 0 ? new Date(mostRecentTimeMs).toISOString() : null;
 
         formattedTags.push({
           presenceId: tagId,
@@ -173,9 +175,9 @@ const PositionMonitoring = () => {
           status: t.subjects?.status || 'Aktif',
           x: xVal,
           y: yVal,
-          in_time: logTime ? new Date(logTime).toTimeString().substring(0, 5) : '-',
+          in_time: mostRecentIso ? new Date(mostRecentIso).toTimeString().substring(0, 5) : '-',
           battery,
-          last_seen: logTime || lastSeen
+          last_seen: mostRecentIso
         });
       }
 
@@ -264,7 +266,7 @@ const PositionMonitoring = () => {
           y: Number(data.y),
           in_time: new Date().toTimeString().split(' ')[0],
           battery: data.battery !== undefined ? data.battery : (idx !== -1 ? prev[idx].battery : 100),
-          last_seen: data.timestamp || new Date().toISOString()
+          last_seen: new Date().toISOString()
         };
 
         if (idx !== -1) {
@@ -282,6 +284,24 @@ const PositionMonitoring = () => {
       if (!Array.isArray(heartbeats)) return;
       const now = new Date();
       const timeStr = now.toTimeString().substring(0, 8);
+
+      // Refresh last_seen for any tags detected by anchors in this heartbeat
+      heartbeats.forEach(hb => {
+        if (hb.tagId) {
+          setActiveMembers(prev => {
+            const idx = prev.findIndex(m => m.tagId === hb.tagId);
+            if (idx !== -1) {
+              const newList = [...prev];
+              newList[idx] = {
+                ...newList[idx],
+                last_seen: now.toISOString()
+              };
+              return newList;
+            }
+            return prev;
+          });
+        }
+      });
 
       setAnchorStatus(prev => {
         const updated = { ...prev };
@@ -392,15 +412,15 @@ const PositionMonitoring = () => {
     });
   };
 
-  const DETECTED_THRESHOLD_MS = 2 * 60 * 1000; // 2 minutes (120 seconds)
+  const DETECTED_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes detection window
 
-  // Filter Logic: Only display tags that are actively detected (last_seen within 2 minutes)
+  // Filter Logic: Only display tags that are actively detected (last_seen within 10 minutes)
   const filteredMembers = activeMembers.filter((m) => {
     const isDetected = m.last_seen 
       ? (Date.now() - new Date(m.last_seen).getTime() < DETECTED_THRESHOLD_MS) 
       : false;
 
-    // IF TAG IS NOT DETECTED (OFFLINE / > 2 MINUTES IDLE), DO NOT DISPLAY
+    // IF TAG IS NOT DETECTED (NO SIGNAL FOR > 10 MINUTES), DO NOT DISPLAY
     if (!isDetected) return false;
 
     const matchesStatus =
