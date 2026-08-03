@@ -30,7 +30,16 @@ const DeviceSettings = () => {
   const fileInputRef = useRef(null);
 
   // Forms State
-  const [anchorForm, setAnchorForm] = useState({ anchorId: '', name: '', x_position: 0, y_position: 0, status: 'active' });
+  const [anchorForm, setAnchorForm] = useState({
+    anchorId: '',
+    name: '',
+    ip_address: '',
+    x_position: 0,
+    y_position: 0,
+    rssi_1m: -40.0,
+    path_loss_exp: 3.2,
+    status: 'active'
+  });
   const [showAnchorModal, setShowAnchorModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
 
@@ -59,9 +68,9 @@ const DeviceSettings = () => {
     try {
       setLoading(true);
       const defaultAnchors = [
-        { anchorId: 'anchor-01', name: 'Anchor Node A', x_position: 0.00, y_position: 0.00, status: 'active' },
-        { anchorId: 'anchor-02', name: 'Anchor Node B', x_position: 3.50, y_position: 7.90, status: 'active' },
-        { anchorId: 'anchor-03', name: 'Anchor Node C', x_position: 7.90, y_position: 0.00, status: 'active' }
+        { anchorId: 'anchor-01', name: 'Anchor Node A', ip_address: '192.168.1.101', x_position: 0.00, y_position: 0.00, rssi_1m: -40.00, path_loss_exp: 3.20, status: 'active' },
+        { anchorId: 'anchor-02', name: 'Anchor Node B', ip_address: '192.168.1.102', x_position: 3.50, y_position: 7.90, rssi_1m: -40.00, path_loss_exp: 3.20, status: 'active' },
+        { anchorId: 'anchor-03', name: 'Anchor Node C', ip_address: '192.168.1.103', x_position: 7.90, y_position: 0.00, rssi_1m: -58.00, path_loss_exp: 1.04, status: 'active' }
       ];
 
       const { error } = await supabase
@@ -89,7 +98,16 @@ const DeviceSettings = () => {
   // --- UWB ANCHORS ACTIONS ---
   const handleOpenAddAnchor = () => {
     setIsEditMode(false);
-    setAnchorForm({ anchorId: '', name: '', x_position: 0, y_position: 0, status: 'active' });
+    setAnchorForm({
+      anchorId: '',
+      name: '',
+      ip_address: '',
+      x_position: 0,
+      y_position: 0,
+      rssi_1m: -40.0,
+      path_loss_exp: 3.2,
+      status: 'active'
+    });
     setShowAnchorModal(true);
   };
 
@@ -97,10 +115,13 @@ const DeviceSettings = () => {
     setIsEditMode(true);
     setAnchorForm({
       anchorId: anchor.anchorId,
-      name: anchor.name,
-      x_position: Number(anchor.x_position),
-      y_position: Number(anchor.y_position),
-      status: anchor.status
+      name: anchor.name || '',
+      ip_address: anchor.ip_address || '',
+      x_position: Number(anchor.x_position || 0),
+      y_position: Number(anchor.y_position || 0),
+      rssi_1m: Number(anchor.rssi_1m !== undefined && anchor.rssi_1m !== null ? anchor.rssi_1m : -40.0),
+      path_loss_exp: Number(anchor.path_loss_exp !== undefined && anchor.path_loss_exp !== null ? anchor.path_loss_exp : 3.2),
+      status: anchor.status || 'active'
     });
     setShowAnchorModal(true);
   };
@@ -114,8 +135,12 @@ const DeviceSettings = () => {
     const savePromise = (async () => {
       const payload = {
         name: anchorForm.name.trim(),
+        ip_address: anchorForm.ip_address.trim(),
         x_position: Number(anchorForm.x_position),
-        y_position: Number(anchorForm.y_position)
+        y_position: Number(anchorForm.y_position),
+        rssi_1m: Number(anchorForm.rssi_1m),
+        path_loss_exp: Number(anchorForm.path_loss_exp),
+        status: anchorForm.status
       };
 
       if (isEditMode) {
@@ -285,8 +310,9 @@ const DeviceSettings = () => {
                     <tr>
                       <th>ID Anchor</th>
                       <th>Nama Anchor</th>
-                      <th>Posisi X (meter)</th>
-                      <th>Posisi Y (meter)</th>
+                      <th>Alamat IP</th>
+                      <th>Koordinat X, Y</th>
+                      <th>Kalibrasi (1m / Path Loss n)</th>
                       <th>Status Perangkat</th>
                       <th>Aksi</th>
                     </tr>
@@ -294,7 +320,7 @@ const DeviceSettings = () => {
                   <tbody>
                     {anchors.length === 0 ? (
                       <tr>
-                        <td colSpan="6" className="text-center p-5">
+                        <td colSpan="7" className="text-center p-5">
                           <div className="py-3">
                             <i className="bi bi-broadcast text-muted opacity-50" style={{ fontSize: '3rem' }}></i>
                             <h6 className="mt-3 fw-bold text-dark">Belum ada Anchor Node yang terdaftar</h6>
@@ -314,9 +340,21 @@ const DeviceSettings = () => {
                       anchors.map((anchor) => (
                         <tr key={anchor.anchorId}>
                           <td className="fw-semibold font-monospace">{anchor.anchorId}</td>
-                          <td>{anchor.name}</td>
-                          <td className="fw-semibold font-monospace">{Number(anchor.x_position).toFixed(2)} m</td>
-                          <td className="fw-semibold font-monospace">{Number(anchor.y_position).toFixed(2)} m</td>
+                          <td className="fw-semibold">{anchor.name}</td>
+                          <td>
+                            <span className="badge bg-light text-dark border font-monospace" style={{ fontSize: '11px' }}>
+                              <i className="bi bi-ethernet me-1 text-primary"></i>
+                              {anchor.ip_address || 'Belum diatur'}
+                            </span>
+                          </td>
+                          <td className="fw-semibold font-monospace">
+                            X: {Number(anchor.x_position).toFixed(2)}m, Y: {Number(anchor.y_position).toFixed(2)}m
+                          </td>
+                          <td>
+                            <span className="badge border px-2 py-1 font-monospace" style={{ fontSize: '11px', backgroundColor: '#e0e7ff', color: '#4338ca', borderColor: '#c7d2fe' }}>
+                              A: {anchor.rssi_1m ?? -40} dBm | n: {anchor.path_loss_exp ?? 3.2}
+                            </span>
+                          </td>
                           <td>
                             <span className={`badge ${anchor.status === 'active' ? 'bg-success' : 'bg-danger'}`}>
                               {anchor.status === 'active' ? 'Aktif' : 'Nonaktif'}
@@ -324,7 +362,7 @@ const DeviceSettings = () => {
                           </td>
                           <td>
                             <div className="action-buttons">
-                              <button className="btn-action btn-edit" title="Edit Posisi" onClick={() => handleOpenEditAnchor(anchor)}>
+                              <button className="btn-action btn-edit" title="Edit Posisi & Kalibrasi" onClick={() => handleOpenEditAnchor(anchor)}>
                                 <i className="bi bi-pencil"></i>
                               </button>
                               <button className="btn-action btn-delete" title="Hapus" onClick={() => handleDeleteAnchor(anchor.anchorId)}>
@@ -451,6 +489,16 @@ const DeviceSettings = () => {
                       required
                     />
                   </div>
+                  <div className="mb-3">
+                    <label className="form-label">Alamat IP Anchor (MCU Gateway)</label>
+                    <input
+                      type="text"
+                      className="form-control font-monospace"
+                      value={anchorForm.ip_address}
+                      onChange={(e) => setAnchorForm({ ...anchorForm, ip_address: e.target.value })}
+                      placeholder="Cth: 192.168.1.101"
+                    />
+                  </div>
                   <div className="row">
                     <div className="col-6 mb-3">
                       <label className="form-label">Posisi Koordinat X (m)</label>
@@ -473,6 +521,34 @@ const DeviceSettings = () => {
                         onChange={(e) => setAnchorForm({ ...anchorForm, y_position: e.target.value })}
                         required
                       />
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="col-6 mb-3">
+                      <label className="form-label">RSSI 1 Meter (A in dBm)</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        className="form-control"
+                        value={anchorForm.rssi_1m}
+                        onChange={(e) => setAnchorForm({ ...anchorForm, rssi_1m: e.target.value })}
+                        placeholder="-40.0"
+                        required
+                      />
+                      <small className="text-muted" style={{ fontSize: '10px' }}>Kekuatan sinyal referensi jarak 1m</small>
+                    </div>
+                    <div className="col-6 mb-3">
+                      <label className="form-label">Path Loss Exponent (n)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="form-control"
+                        value={anchorForm.path_loss_exp}
+                        onChange={(e) => setAnchorForm({ ...anchorForm, path_loss_exp: e.target.value })}
+                        placeholder="3.2"
+                        required
+                      />
+                      <small className="text-muted" style={{ fontSize: '10px' }}>Faktor redaman propagasi ruangan</small>
                     </div>
                   </div>
                   <div className="mb-3">
