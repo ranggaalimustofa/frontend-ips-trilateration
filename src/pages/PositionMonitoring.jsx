@@ -134,8 +134,11 @@ const PositionMonitoring = () => {
       const formattedTags = [];
       for (const t of (tagData || [])) {
         const tagId = t.tagId;
-        const name = t.name || t.subjects?.name || tagId;
-        const initials = name
+        const tagName = (t.name && String(t.name).trim() !== '')
+          ? String(t.name).trim()
+          : (t.subjects?.name && String(t.subjects.name).trim() !== '' ? String(t.subjects.name).trim() : tagId);
+
+        const initials = tagName
           .split(' ')
           .map(n => n[0])
           .join('')
@@ -170,7 +173,7 @@ const PositionMonitoring = () => {
           presenceId: tagId,
           memberId: tagId,
           tagId,
-          name,
+          name: tagName,
           initials,
           status: t.subjects?.status || 'Aktif',
           x: xVal,
@@ -242,12 +245,14 @@ const PositionMonitoring = () => {
 
     socket.on('location_update', (data) => {
       console.log('Live UWB location update received:', data);
-      // data format: { tagId, memberId, name, status, x, y, battery, timestamp }
       setActiveMembers((prev) => {
         const tagId = data.tagId || data.memberId;
         const idx = prev.findIndex((m) => m.tagId === tagId);
         
-        const tagName = data.name || (idx !== -1 ? prev[idx].name : tagId);
+        const tagName = (data.name && String(data.name).trim() !== '' && data.name !== 'Unpaired Tag')
+          ? String(data.name).trim()
+          : (idx !== -1 ? prev[idx].name : tagId);
+
         const initials = tagName
           .split(' ')
           .map((n) => n[0])
